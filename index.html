@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Chọn Mẫu Quà Tặng</title>
+<style>
+  :root{
+    --pink:#e93d82;
+    --pink-light:#ff92ad;
+    --bg-deep:#170a13;
+    --bg-card:#241220;
+    --border:#3d1f34;
+    --text:#fbe8f0;
+    --text-dim:#c99aab;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    min-height:100vh;
+    background:
+      radial-gradient(circle at 20% 0%, #3a0f2a 0%, transparent 45%),
+      radial-gradient(circle at 90% 30%, #2a0f22 0%, transparent 40%),
+      var(--bg-deep);
+    color:var(--text);
+    font-family:"Segoe UI","Helvetica Neue",Arial,sans-serif;
+    padding:40px 16px 60px;
+  }
+  .wrap{max-width:680px;margin:0 auto;}
+  h1{
+    font-size:1.6rem;
+    text-align:center;
+    margin:0 0 6px;
+    background:linear-gradient(135deg,#ff92ad,#e93d82);
+    -webkit-background-clip:text;
+    background-clip:text;
+    color:transparent;
+    font-weight:800;
+  }
+  p.subtitle{color:var(--text-dim);text-align:center;margin:0 0 34px;font-size:.92rem;}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+  @media (max-width:560px){.grid{grid-template-columns:1fr;}}
+  .card{
+    background:var(--bg-card);
+    border:1px solid var(--border);
+    border-radius:18px;
+    overflow:hidden;
+    display:flex;
+    flex-direction:column;
+    cursor:pointer;
+    transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+  }
+  .card:hover{
+    transform:translateY(-4px);
+    border-color:var(--pink);
+    box-shadow:0 12px 30px rgba(233,61,130,.25);
+  }
+  .card-preview{
+    height:150px;
+    background-size:cover;
+    background-position:center;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:2.6rem;
+    background-color:#1a0d16;
+  }
+  .card-body{padding:16px 18px 20px;}
+  .card-body h2{font-size:1.05rem;margin:0 0 6px;color:var(--pink-light);}
+  .card-body p{font-size:.83rem;color:var(--text-dim);line-height:1.5;margin:0 0 14px;}
+  .card-body button{
+    width:100%;
+    padding:11px;
+    border:none;
+    border-radius:10px;
+    background:linear-gradient(135deg,#ff6fa5,#e93d82);
+    color:#fff;
+    font-weight:700;
+    font-size:.88rem;
+    cursor:pointer;
+  }
+  .empty{text-align:center;color:var(--text-dim);padding:60px 20px;font-size:.9rem;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Chọn Mẫu Quà Tặng 💌</h1>
+  <p class="subtitle">Chọn 1 mẫu, sau đó tự thêm ảnh / lời nhắn / nhạc của riêng bạn.</p>
+  <div id="grid" class="grid"></div>
+</div>
+
+<script>
+fetch("templates.json", { cache: "no-store" })
+  .then((res) => res.json())
+  .then((templates) => {
+    const grid = document.getElementById("grid");
+    if (!templates.length) {
+      grid.innerHTML = '<div class="empty">Chưa có mẫu nào trong templates.json</div>';
+      return;
+    }
+    templates.forEach((t) => {
+      const card = document.createElement("div");
+      card.className = "card";
+      const previewStyle = t.preview
+        ? `background-image:url('${t.preview}')`
+        : "";
+      card.innerHTML = `
+        <div class="card-preview" style="${previewStyle}">${t.preview ? "" : (t.badge || "💌")}</div>
+        <div class="card-body">
+          <h2>${t.badge || ""} ${t.name}</h2>
+          <p>${t.description || ""}</p>
+          <button>Chọn mẫu này</button>
+        </div>
+      `;
+      card.addEventListener("click", () => {
+        window.location.href = "admin.html?template=" + encodeURIComponent(t.id);
+      });
+      grid.appendChild(card);
+    });
+  })
+  .catch(() => {
+    document.getElementById("grid").innerHTML =
+      '<div class="empty">Không đọc được templates.json — kiểm tra lại file này có nằm cùng thư mục với index.html không.</div>';
+  });
+</script>
+</body>
+</html>

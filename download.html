@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Tải Quà Tặng</title>
+<style>
+  :root{
+    --pink:#e93d82;
+    --pink-light:#ff92ad;
+    --bg-deep:#170a13;
+    --bg-card:#241220;
+    --border:#3d1f34;
+    --text:#fbe8f0;
+    --text-dim:#c99aab;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:
+      radial-gradient(circle at 20% 0%, #3a0f2a 0%, transparent 45%),
+      radial-gradient(circle at 90% 30%, #2a0f22 0%, transparent 40%),
+      var(--bg-deep);
+    color:var(--text);
+    font-family:"Segoe UI","Helvetica Neue",Arial,sans-serif;
+    padding:20px;
+  }
+  .card{
+    max-width:420px;
+    width:100%;
+    background:var(--bg-card);
+    border:1px solid var(--border);
+    border-radius:18px;
+    padding:32px 26px;
+    text-align:center;
+  }
+  .icon{font-size:2.4rem;margin-bottom:10px;}
+  h1{font-size:1.2rem;margin:0 0 10px;color:var(--pink-light);}
+  p{color:var(--text-dim);font-size:.88rem;line-height:1.6;margin:0 0 22px;}
+  button, a.btn{
+    display:inline-block;
+    padding:14px 30px;
+    border:none;
+    border-radius:12px;
+    background:linear-gradient(135deg,#ff6fa5,#e93d82);
+    color:#fff;
+    font-weight:700;
+    font-size:.95rem;
+    cursor:pointer;
+    text-decoration:none;
+    box-shadow:0 4px 18px rgba(233,61,130,.4);
+  }
+  a.link-back{display:block;margin-top:16px;color:var(--text-dim);font-size:.82rem;}
+  .status{font-size:.8rem;color:#7ee787;margin-top:14px;}
+</style>
+</head>
+<body>
+<div class="card" id="card">
+  <div class="icon">⏳</div>
+  <h1>Đang kiểm tra...</h1>
+  <p>Vui lòng chờ trong giây lát.</p>
+</div>
+
+<script>
+const EXPIRY_MS = 20 * 60 * 1000; // sẽ được ghi đè bằng settings.json nếu có
+const card = document.getElementById("card");
+
+function render(state) {
+  if (state === "ready") {
+    card.innerHTML = `
+      <div class="icon">🎉</div>
+      <h1>Vượt link thành công!</h1>
+      <p>File quà tặng của bạn đã sẵn sàng. Bấm nút bên dưới để tải xuống.</p>
+      <button id="downloadBtn">Tải xuống ngay</button>
+      <a class="link-back" href="index.html">← Về trang chọn mẫu</a>
+    `;
+    document.getElementById("downloadBtn").addEventListener("click", doDownload);
+  } else if (state === "downloaded") {
+    card.innerHTML = `
+      <div class="icon">✅</div>
+      <h1>Đã tải xong</h1>
+      <p>Nếu trình duyệt không tự lưu file, hãy kiểm tra thư mục Downloads.</p>
+      <a class="link-back" href="index.html">← Về trang chọn mẫu</a>
+    `;
+  } else {
+    card.innerHTML = `
+      <div class="icon">⚠️</div>
+      <h1>Không tìm thấy file để tải</h1>
+      <p>Có thể bạn chưa tạo file ở trang admin, hoặc phiên đã hết hạn (${EXPIRY_MS / 60000} phút). Hãy quay lại tạo file trước rồi vượt link lại nhé.</p>
+      <a class="btn" href="index.html">Quay lại chọn mẫu</a>
+    `;
+  }
+}
+
+function doDownload() {
+  try {
+    const raw = localStorage.getItem("pending_gift");
+    if (!raw) return render("missing");
+    const data = JSON.parse(raw);
+    const blob = new Blob([data.content], { type: "text/html" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = data.filename || "qua-tang.html";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    localStorage.removeItem("pending_gift"); // dùng 1 lần
+    render("downloaded");
+  } catch (e) {
+    console.error(e);
+    render("missing");
+  }
+}
+
+fetch("settings.json", { cache: "no-store" })
+  .then((res) => res.json())
+  .then((settings) => {
+    const expiryMin = settings.tokenExpiryMinutes || 20;
+    checkPending(expiryMin * 60 * 1000);
+  })
+  .catch(() => checkPending(EXPIRY_MS));
+
+function checkPending(expiryMs) {
+  try {
+    const raw = localStorage.getItem("pending_gift");
+    if (!raw) return render("missing");
+    const data = JSON.parse(raw);
+    const age = Date.now() - (data.createdAt || 0);
+    if (age > expiryMs) {
+      localStorage.removeItem("pending_gift");
+      return render("missing");
+    }
+    render("ready");
+  } catch (e) {
+    render("missing");
+  }
+}
+</script>
+</body>
+</html>

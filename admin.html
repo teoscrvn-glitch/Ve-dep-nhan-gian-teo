@@ -1,0 +1,911 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Trang Admin – Tạo Quà Tặng</title>
+<style>
+  :root{
+    --pink:#e93d82;
+    --pink-light:#ff92ad;
+    --bg-deep:#170a13;
+    --bg-card:#241220;
+    --border:#3d1f34;
+    --text:#fbe8f0;
+    --text-dim:#c99aab;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    min-height:100vh;
+    background:
+      radial-gradient(circle at 20% 0%, #3a0f2a 0%, transparent 45%),
+      radial-gradient(circle at 90% 30%, #2a0f22 0%, transparent 40%),
+      var(--bg-deep);
+    color:var(--text);
+    font-family:"Segoe UI","Helvetica Neue",Arial,sans-serif;
+    padding:28px 16px 80px;
+  }
+  .wrap{max-width:640px;margin:0 auto;}
+  a.back{color:var(--text-dim);font-size:.8rem;text-decoration:none;}
+  h1{
+    font-size:1.5rem;
+    margin:10px 0 4px;
+    background:linear-gradient(135deg,#ff92ad,#e93d82);
+    -webkit-background-clip:text;
+    background-clip:text;
+    color:transparent;
+    font-weight:800;
+  }
+  .template-pill{
+    display:inline-block;
+    font-size:.78rem;
+    color:var(--pink-light);
+    border:1px solid var(--border);
+    padding:4px 12px;
+    border-radius:999px;
+    margin-bottom:18px;
+  }
+  p.subtitle{color:var(--text-dim);margin:0 0 28px;font-size:.92rem;line-height:1.5;}
+  .card{
+    background:var(--bg-card);
+    border:1px solid var(--border);
+    border-radius:16px;
+    padding:20px;
+    margin-bottom:18px;
+  }
+  .card h2{
+    font-size:.78rem;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    color:var(--pink-light);
+    margin:0 0 4px;
+  }
+  .card p.hint{color:var(--text-dim);font-size:.83rem;margin:0 0 14px;line-height:1.5;}
+  input[type=file]{
+    display:block;
+    width:100%;
+    padding:10px;
+    background:#1a0d16;
+    border:1px dashed var(--border);
+    border-radius:10px;
+    color:var(--text);
+    font-size:.85rem;
+  }
+  textarea{
+    width:100%;
+    min-height:180px;
+    background:#1a0d16;
+    border:1px solid var(--border);
+    border-radius:10px;
+    color:var(--text);
+    padding:12px;
+    font-size:.88rem;
+    line-height:1.6;
+    resize:vertical;
+    font-family:inherit;
+  }
+  .thumbs{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px;}
+  .thumb{
+    position:relative;
+    width:76px;height:76px;
+    border-radius:10px;
+    overflow:hidden;
+    border:1px solid var(--border);
+  }
+  .thumb img{width:100%;height:100%;object-fit:cover;display:block;}
+  .thumb button{
+    position:absolute;top:2px;right:2px;
+    width:20px;height:20px;
+    border-radius:50%;
+    border:none;
+    background:rgba(0,0,0,.65);
+    color:#fff;
+    cursor:pointer;
+    font-size:12px;
+    line-height:1;
+  }
+  .music-name{margin-top:10px;font-size:.85rem;color:var(--text-dim);}
+  audio{width:100%;margin-top:10px;}
+  .status{font-size:.8rem;color:var(--text-dim);margin-top:8px;}
+  .status.ok{color:#7ee787;}
+  .status.warn{color:#ffb454;}
+  .actions{position:sticky;bottom:0;display:flex;gap:10px;padding-top:10px;}
+  button.main{
+    flex:1;
+    padding:15px;
+    border:none;
+    border-radius:12px;
+    font-size:.95rem;
+    font-weight:700;
+    cursor:pointer;
+    transition:transform .15s ease, box-shadow .15s ease;
+  }
+  button.main:active{transform:scale(.97);}
+  .btn-preview{background:#2c1723;color:var(--pink-light);border:1px solid var(--pink);}
+  .btn-download{
+    background:linear-gradient(135deg,#ff6fa5,#e93d82);
+    color:#fff;
+    box-shadow:0 4px 18px rgba(233,61,130,.4);
+  }
+  .steps{background:var(--bg-card);border:1px solid var(--border);border-radius:16px;padding:20px;margin-top:22px;}
+  .steps h2{font-size:.95rem;margin:0 0 12px;color:var(--pink-light);}
+  .steps ol{margin:0;padding-left:20px;color:var(--text-dim);font-size:.85rem;line-height:1.9;}
+  .steps a{color:var(--pink-light);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="index.html">← Quay lại chọn mẫu</a>
+  <h1>Trang Admin – Tạo Quà Tặng 💌</h1>
+  <div id="templatePill" class="template-pill">Đang tải mẫu...</div>
+  <p class="subtitle">Chọn ảnh, sửa lời nhắn, chọn nhạc — rồi bấm "Tải file quà tặng" để có 1 file
+  website hoàn chỉnh, sẵn sàng đem đi đăng link.</p>
+
+  <div class="card">
+    <h2>1. Ảnh</h2>
+    <p class="hint">Chọn nhiều ảnh cùng lúc. Ảnh sẽ tự nén nhẹ để file không quá nặng.</p>
+    <input id="imgInput" type="file" accept="image/*" multiple />
+    <div id="thumbs" class="thumbs"></div>
+    <div id="imgStatus" class="status"></div>
+  </div>
+
+  <div class="card">
+    <h2>2. Lời nhắn</h2>
+    <p class="hint" id="msgHint">Mỗi dòng là 1 câu sẽ hiện ngẫu nhiên trên màn hình. Xoá / thêm dòng tuỳ ý.</p>
+    <textarea id="messages">Anh yêu em
+Em là cả cuộc đời anh
+Mãi mãi bên nhau
+Em là ánh mặt trời của anh
+Có em mọi thứ đều tốt đẹp hơn
+Em là cả vũ trụ của anh
+Cảm ơn em đã xuất hiện
+Anh luôn nghĩ về em
+Trái tim anh thuộc về em
+Em là duy nhất</textarea>
+  </div>
+
+  <div class="card">
+    <h2>3. Nhạc nền</h2>
+    <p class="hint">Chọn 1 file nhạc (mp3). Nhạc nhẹ, file dưới ~3MB sẽ mượt nhất.</p>
+    <input id="musicInput" type="file" accept="audio/*" />
+    <div id="musicStatus" class="status"></div>
+    <audio id="musicPreview" controls style="display:none;"></audio>
+  </div>
+
+  <div class="actions">
+    <button class="main btn-preview" id="btnPreview">Xem trước</button>
+    <button class="main btn-download" id="btnDownload">Tải file quà tặng</button>
+  </div>
+
+  <div class="steps">
+    <h2>Quy trình tải file</h2>
+    <ol>
+      <li>Bấm "Tải file quà tặng" — web sẽ lưu tạm file trong trình duyệt rồi đưa bạn qua link vượt (link4m).</li>
+      <li>Vượt link xong sẽ tự về trang tải file, bấm "Tải xuống ngay" để lấy file .html hoàn chỉnh.</li>
+      <li>Lưu ý: phải tải trong <b>cùng 1 trình duyệt/thiết bị</b> vừa tạo file (vì file được lưu tạm ngay trên máy đó), và trong vòng 20 phút kể từ lúc bấm tạo.</li>
+    </ol>
+  </div>
+</div>
+
+<script>
+const params = new URLSearchParams(window.location.search);
+const templateId = params.get("template") === "galaxy" ? "galaxy" : "hearts";
+document.getElementById("templatePill").textContent =
+  templateId === "galaxy" ? "🌌 Mẫu: Vũ Trụ Của Chúng Ta" : "🩷 Mẫu: Trái Tim Rơi";
+if (templateId === "galaxy") {
+  document.getElementById("msgHint").textContent =
+    "Mỗi dòng là 1 lời nhắn hiện ra khi chạm vào 1 tấm ảnh đang trôi quanh hành tinh.";
+}
+
+const images = []; // {name, dataUrl}
+let musicDataUrl = null;
+
+const imgInput = document.getElementById("imgInput");
+const thumbsEl = document.getElementById("thumbs");
+const imgStatus = document.getElementById("imgStatus");
+const musicInput = document.getElementById("musicInput");
+const musicStatus = document.getElementById("musicStatus");
+const musicPreview = document.getElementById("musicPreview");
+
+function compressImage(file, maxDim = 900, quality = 0.72) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error("Không đọc được ảnh"));
+    reader.onload = () => {
+      const img = new Image();
+      img.onerror = () => reject(new Error("Ảnh lỗi"));
+      img.onload = () => {
+        let { width, height } = img;
+        if (width > height && width > maxDim) {
+          height = Math.round((height * maxDim) / width);
+          width = maxDim;
+        } else if (height > maxDim) {
+          width = Math.round((width * maxDim) / height);
+          height = maxDim;
+        }
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        canvas.getContext("2d").drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL("image/jpeg", quality));
+      };
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function renderThumbs() {
+  thumbsEl.innerHTML = "";
+  images.forEach((item, i) => {
+    const div = document.createElement("div");
+    div.className = "thumb";
+    div.innerHTML = `<img src="${item.dataUrl}" /><button data-i="${i}">×</button>`;
+    thumbsEl.appendChild(div);
+  });
+  thumbsEl.querySelectorAll("button").forEach((btn) => {
+    btn.onclick = () => {
+      images.splice(Number(btn.dataset.i), 1);
+      renderThumbs();
+      updateImgStatus();
+    };
+  });
+}
+
+function updateImgStatus() {
+  const totalKB = Math.round(images.reduce((sum, i) => sum + i.dataUrl.length, 0) / 1024);
+  imgStatus.textContent = images.length ? `${images.length} ảnh đã sẵn sàng (~${totalKB} KB)` : "Chưa có ảnh nào.";
+  imgStatus.className = "status " + (images.length ? "ok" : "");
+}
+
+imgInput.addEventListener("change", async () => {
+  imgStatus.textContent = "Đang nén ảnh...";
+  imgStatus.className = "status warn";
+  for (const file of imgInput.files) {
+    try {
+      const dataUrl = await compressImage(file);
+      images.push({ name: file.name, dataUrl });
+    } catch (e) {
+      console.error(e);
+    }
+  }
+  renderThumbs();
+  updateImgStatus();
+  imgInput.value = "";
+});
+
+musicInput.addEventListener("change", () => {
+  const file = musicInput.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    musicDataUrl = reader.result;
+    const sizeMB = (file.size / 1024 / 1024).toFixed(2);
+    musicStatus.textContent = `Đã chọn: ${file.name} (${sizeMB} MB)`;
+    musicStatus.className = "status " + (file.size > 4.5 * 1024 * 1024 ? "warn" : "ok");
+    if (file.size > 4.5 * 1024 * 1024) {
+      musicStatus.textContent += " — file khá nặng, nên chọn bản nhạc nhẹ hơn để load nhanh.";
+    }
+    musicPreview.src = musicDataUrl;
+    musicPreview.style.display = "block";
+  };
+  reader.readAsDataURL(file);
+});
+
+function getMessages() {
+  return document
+    .getElementById("messages")
+    .value.split("\n")
+    .map((s) => s.trim())
+    .filter(Boolean);
+}
+
+/* ============================================================
+   MAU 1: TRAI TIM ROI
+   ============================================================ */
+function buildHeartsSiteHTML() {
+  const messages = getMessages();
+  const imgList = images.map((i) => i.dataUrl);
+  const musicSrc = musicDataUrl || "";
+  const dataScript = `
+    const FallingMess = ${JSON.stringify(messages.length ? messages : ["Anh yêu em"])};
+    const fallingImg = ${JSON.stringify(imgList)};
+    const MUSIC_SRC = ${JSON.stringify(musicSrc)};
+  `;
+  return `<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Dành cho em ❤️</title>
+<style>
+body{margin:0;padding:0;box-sizing:border-box;font-family:"Segoe UI","Helvetica Neue",Arial,sans-serif;height:100dvh;width:100%;overflow:hidden;background:#000;}
+#modal-inicio{position:fixed;z-index:1000;inset:0;background:radial-gradient(circle at center, rgba(50,8,28,.85) 0%, rgba(0,0,0,.92) 100%);display:flex;align-items:center;justify-content:center;flex-direction:column;}
+.modal-card{background:linear-gradient(160deg,#fff6fa 0%,#ffe1ee 100%);padding:40px 34px 34px;border-radius:24px;border:2px solid #ffb6d5;box-shadow:0 0 50px rgba(255,105,180,.55),0 20px 50px rgba(0,0,0,.35);display:flex;flex-direction:column;align-items:center;text-align:center;max-width:90vw;animation:modal-pop .6s cubic-bezier(.22,1.2,.36,1);}
+@keyframes modal-pop{0%{transform:scale(.7);opacity:0;}100%{transform:scale(1);opacity:1;}}
+.modal-card h1{font-size:1.3rem;color:#b0436e;margin:0 0 18px;}
+.btn-start{padding:16px 42px;font-size:1.2rem;font-weight:600;background:linear-gradient(135deg,#ff6fa5,#e93d82);color:#fff;border:none;border-radius:14px;cursor:pointer;box-shadow:0 4px 18px rgba(233,61,130,.5);transition:transform .2s ease, box-shadow .2s ease;}
+.btn-start:hover{transform:translateY(-2px) scale(1.04);box-shadow:0 6px 24px rgba(233,61,130,.65);}
+.btn-start:active{transform:translateY(0) scale(.97);}
+#love-section{position:fixed;top:0;left:0;width:100%;height:100%;display:none;background:#000;}
+.falling-item{position:absolute;user-select:none;pointer-events:none;}
+.love-word{box-sizing:border-box;width:180px;padding:10px 14px;display:flex;align-items:center;justify-content:center;text-align:center;background:#fff;border:3px solid #ff69b4;border-radius:14px;font-size:14px;line-height:1.35;overflow-wrap:break-word;font-weight:bold;box-shadow:0 4px 14px rgba(0,0,0,.18);}
+.love-img{border-radius:16px;}
+@keyframes fall{0%{transform:translateY(0);opacity:0;}8%{opacity:1;}72%{opacity:1;}100%{transform:translateY(92vh);opacity:0;}}
+.explosion{position:absolute;font-size:20px;animation:explode 1.8s ease-out forwards;opacity:0;font-weight:bold;text-shadow:0 0 5px rgba(255,255,255,.7);}
+@keyframes explode{0%{transform:translate(0,0) scale(1);opacity:1;}100%{transform:translate(var(--tx),var(--ty)) scale(0);opacity:0;}}
+</style>
+</head>
+<body>
+<div id="modal-inicio">
+  <div class="modal-card">
+    <h1>Có một điều bất ngờ dành cho em 💕</h1>
+    <button id="btnComenzar" class="btn-start">Mở Quà</button>
+  </div>
+</div>
+<canvas id="star-canvas" style="position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:0;pointer-events:none;display:none;"></canvas>
+<div id="love-section" style="position:relative;z-index:1;">
+  <audio id="bg-music" preload="auto" loop></audio>
+</div>
+<script>
+${dataScript}
+const starCanvas = document.getElementById("star-canvas");
+const ctx = starCanvas.getContext("2d");
+let W = window.innerWidth, H = window.innerHeight;
+function resizeStarCanvas(){W=window.innerWidth;H=window.innerHeight;starCanvas.width=W;starCanvas.height=H;}
+window.addEventListener("resize", resizeStarCanvas);
+resizeStarCanvas();
+const STAR_COUNT = 120;
+const stars = [];
+for (let i=0;i<STAR_COUNT;i++){stars.push({x:Math.random()*W,y:Math.random()*H,r:Math.random()*1.2+.5,speed:Math.random()*.18+.04,angle:Math.random()*Math.PI*2,drift:(Math.random()-.5)*.08});}
+function animateStars(){
+  if (starCanvas.style.display==="none") return;
+  ctx.clearRect(0,0,W,H);
+  for (const s of stars){
+    ctx.save();ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);
+    ctx.fillStyle="rgba(255,255,255,"+(0.7+Math.random()*0.3)+")";
+    ctx.shadowColor="#fff";ctx.shadowBlur=8;ctx.fill();ctx.restore();
+    s.x+=Math.cos(s.angle)*s.speed+s.drift; s.y+=Math.sin(s.angle)*s.speed;
+    if(s.x<0)s.x=W; if(s.x>W)s.x=0; if(s.y<0)s.y=H; if(s.y>H)s.y=0;
+  }
+  requestAnimationFrame(animateStars);
+}
+document.getElementById("btnComenzar").onclick = function(){
+  document.getElementById("modal-inicio").style.display="none";
+  document.getElementById("love-section").style.display="block";
+  starCanvas.style.display="block";
+  animateStars();
+  const music = document.getElementById("bg-music");
+  if (MUSIC_SRC) { music.src = MUSIC_SRC; music.currentTime = 0; music.play().catch(()=>{}); }
+  startFallingRain();
+};
+const ACCENT_COLORS=["#ff4757","#ff6348","#ffa502","#eccc68","#2ed573","#1e90ff","#3742fa","#a55eea","#ff4081","#ff69b4"];
+const HEART_ICONS=["❤️","🧡","💛","💚","💙","💜","🩷","🩵"];
+function randomColor(){return ACCENT_COLORS[Math.floor(Math.random()*ACCENT_COLORS.length)];}
+function randomLeft(w){const maxLeft=Math.max(window.innerWidth-w,0);return Math.random()*maxLeft+"px";}
+function getFallingConfig(){
+  const w=window.innerWidth;
+  if(w<=480) return {interval:1300,maxActive:8,wordWidth:130,fontSize:12,imgMin:60,imgMax:85,burst:16};
+  if(w<=900) return {interval:1050,maxActive:14,wordWidth:155,fontSize:13,imgMin:75,imgMax:105,burst:26};
+  return {interval:900,maxActive:22,wordWidth:180,fontSize:14,imgMin:90,imgMax:130,burst:40};
+}
+const body = document.getElementById("love-section");
+let activeFalling = 0;
+function createFalling(config){
+  if (activeFalling >= config.maxActive) return;
+  activeFalling++;
+  const useImg = fallingImg.length > 0 && Math.random() < 0.3;
+  if (useImg){
+    const img = document.createElement("img");
+    img.src = fallingImg[Math.floor(Math.random()*fallingImg.length)];
+    img.className = "falling-item love-img";
+    const imgWidth = Math.random()*(config.imgMax-config.imgMin)+config.imgMin;
+    img.style.width = imgWidth+"px"; img.style.height="auto";
+    img.style.left = randomLeft(imgWidth);
+    const imgDuration = Math.random()*10+8;
+    img.style.animation = "fall "+imgDuration+"s linear forwards";
+    const glow = randomColor();
+    img.style.filter = "drop-shadow(0 0 16px #fff) drop-shadow(0 0 32px "+glow+")";
+    body.appendChild(img);
+    setTimeout(()=>{img.remove();activeFalling--;}, imgDuration*1000+100);
+  } else {
+    const word = document.createElement("div");
+    word.className = "falling-item love-word";
+    word.textContent = FallingMess[Math.floor(Math.random()*FallingMess.length)];
+    word.style.width = config.wordWidth+"px";
+    word.style.fontSize = config.fontSize+"px";
+    word.style.left = randomLeft(config.wordWidth);
+    const color = randomColor();
+    word.style.borderColor = color; word.style.color = color;
+    const wordDuration = Math.random()*9+7;
+    word.style.animation = "fall "+wordDuration+"s linear forwards";
+    body.appendChild(word);
+    setTimeout(()=>{word.remove();activeFalling--;}, wordDuration*1000+100);
+  }
+}
+function startFallingRain(){
+  const config = getFallingConfig();
+  setInterval(()=>createFalling(config), config.interval);
+  body.addEventListener("click",(e)=>{
+    for (let i=0;i<config.burst;i++){
+      const particle = document.createElement("div");
+      particle.className = "explosion";
+      particle.textContent = HEART_ICONS[Math.floor(Math.random()*HEART_ICONS.length)];
+      particle.style.left = e.clientX+"px"; particle.style.top = e.clientY+"px";
+      const angle = Math.random()*Math.PI*2, dist = Math.random()*150+80;
+      particle.style.setProperty("--tx", Math.cos(angle)*dist+"px");
+      particle.style.setProperty("--ty", Math.sin(angle)*dist+"px");
+      particle.style.fontSize = (Math.random()*15+18)+"px";
+      body.appendChild(particle);
+      setTimeout(()=>particle.remove(),1800);
+    }
+  });
+}
+<\/script>
+</body>
+</html>`;
+}
+
+/* ============================================================
+   MAU 2: VU TRU (Three.js)
+   ============================================================ */
+function buildGalaxySiteHTML() {
+  const messages = getMessages();
+  const photos = images.map((i) => i.dataUrl);
+  const musicSrc = musicDataUrl || "";
+  const dataScript = `
+    const MESSAGES = ${JSON.stringify(messages.length ? messages : ["Anh yêu em"])};
+    const PHOTOS = ${JSON.stringify(photos)};
+    const MUSIC_SRC = ${JSON.stringify(musicSrc)};
+  `;
+  return `<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Dải Ngân Hà Của Chúng Ta</title>
+<link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=Be+Vietnam+Pro:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+<style>
+body{margin:0;overflow:hidden;background-color:#010103;font-family:"Be Vietnam Pro",-apple-system,sans-serif;color:#fff;}
+canvas{display:block;}
+#star-bg{position:fixed;inset:0;pointer-events:none;z-index:1;overflow:hidden;}
+#dust-bg{position:fixed;inset:0;pointer-events:none;z-index:2;overflow:hidden;}
+.star,.meteor{position:absolute;border-radius:50%;}
+.star{background:white;animation:twinkle linear infinite;}
+@keyframes twinkle{0%,100%{opacity:.2;transform:scale(.8);}50%{opacity:1;transform:scale(1.2);}}
+.meteor{width:2px;height:2px;background:white;box-shadow:0 0 10px #fff;animation:meteor 4s linear infinite;}
+@keyframes meteor{0%{transform:translate(0,0);}100%{transform:translate(-400px,400px);opacity:0;}}
+.dust{position:absolute;background:#fff;border-radius:50%;opacity:.55;animation:drift linear infinite;}
+@keyframes drift{0%{transform:translateY(0) translateX(0);opacity:0;}10%{opacity:.7;}90%{opacity:.5;}100%{transform:translateY(-120vh) translateX(var(--dx,20px));opacity:0;}}
+#entry-modal{position:fixed;inset:0;z-index:200;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at 50% 40%,#0d0a1a 0%,#010103 75%);transition:opacity .9s ease;}
+#entry-modal.fade-out{opacity:0;pointer-events:none;}
+.entry-wrap{display:flex;flex-direction:column;align-items:center;gap:26px;}
+.whale-holder{position:relative;width:260px;height:180px;display:flex;align-items:center;justify-content:center;}
+#whale-svg{filter:drop-shadow(0 0 18px rgba(160,130,255,.75)) drop-shadow(0 0 36px rgba(255,140,210,.45));animation:whale-float 4.5s ease-in-out infinite;}
+@keyframes whale-float{0%,100%{transform:translateY(0) rotate(0deg);}50%{transform:translateY(-10px) rotate(-1.5deg);}}
+.whale-sparkles{position:absolute;inset:0;pointer-events:none;}
+.whale-sparkles span{position:absolute;width:3px;height:3px;background:#fff;border-radius:50%;box-shadow:0 0 6px 1px #fff;animation:sparkle-tw 1.6s ease-in-out infinite;}
+@keyframes sparkle-tw{0%,100%{opacity:.15;transform:scale(.6);}50%{opacity:1;transform:scale(1.3);}}
+.entry-loading{display:flex;align-items:center;gap:10px;font-size:.8rem;letter-spacing:.08em;color:rgba(255,255,255,.75);}
+.spinner{width:16px;height:16px;border-radius:50%;border:2px solid rgba(255,255,255,.25);border-top-color:#ffb2d9;animation:spin .9s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.entry-button{padding:14px 46px;border:none;border-radius:999px;background:linear-gradient(135deg,#ff8fb1,#ff5f96);color:#fff;font-family:"Be Vietnam Pro",sans-serif;font-weight:600;font-size:1rem;letter-spacing:.03em;cursor:pointer;box-shadow:0 0 0 1px rgba(255,255,255,.25) inset,0 8px 30px rgba(255,95,150,.55);animation:pulse-btn 2.2s ease-in-out infinite;transition:transform .2s ease;}
+.entry-button:hover{transform:translateY(-2px) scale(1.03);}
+@keyframes pulse-btn{0%,100%{box-shadow:0 0 0 1px rgba(255,255,255,.25) inset,0 8px 30px rgba(255,95,150,.55);}50%{box-shadow:0 0 0 1px rgba(255,255,255,.35) inset,0 8px 44px rgba(255,95,150,.85);}}
+.music-toggle{position:fixed;top:18px;right:18px;z-index:210;width:40px;height:40px;border-radius:50%;border:1px solid rgba(255,255,255,.25);background:rgba(10,8,16,.55);backdrop-filter:blur(6px);color:#ffb2d9;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform .2s ease,box-shadow .3s ease,background .3s ease;box-shadow:0 0 0 rgba(255,100,160,0);}
+.music-toggle:hover{transform:scale(1.08);background:rgba(30,15,30,.75);}
+.music-toggle.playing{box-shadow:0 0 16px rgba(255,100,160,.65);animation:music-pulse 1.8s ease-in-out infinite;}
+@keyframes music-pulse{0%,100%{box-shadow:0 0 10px rgba(255,100,160,.45);}50%{box-shadow:0 0 20px rgba(255,100,160,.85);}}
+#overlay{position:absolute;inset:0;pointer-events:none;display:flex;flex-direction:column;justify-content:space-between;padding:40px;padding-bottom:28px;background:radial-gradient(circle at center,transparent 30%,rgba(0,0,0,.5) 100%);z-index:10;opacity:0;transition:opacity 1.2s ease;}
+#overlay.show{opacity:1;}
+.header{text-align:center;}
+.title{font-family:"Dancing Script",cursive;font-size:2.2rem;letter-spacing:.04em;color:#fff;margin-bottom:12px;font-weight:700;opacity:.95;text-shadow:0 0 24px rgba(255,170,210,.55);}
+.status-pill{display:inline-block;padding:6px 20px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.15);border-radius:30px;font-size:.65rem;letter-spacing:.25em;text-transform:uppercase;transition:all 1.5s cubic-bezier(.4,0,.2,1);}
+.hud-bottom{display:flex;justify-content:space-between;align-items:flex-end;font-family:"JetBrains Mono",monospace;font-size:.7rem;opacity:.65;letter-spacing:1px;}
+.metric{margin-bottom:6px;}
+.val{color:#ffb2d9;font-weight:bold;transition:color 1.5s ease;}
+.hint{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);font-size:.75rem;letter-spacing:.04em;color:rgba(255,255,255,.55);white-space:nowrap;}
+#vignette{position:fixed;inset:0;background:radial-gradient(circle,transparent 50%,black 150%);pointer-events:none;z-index:5;}
+.love-card-modal{position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;padding:24px;background:rgba(3,0,8,.72);backdrop-filter:blur(6px);opacity:0;pointer-events:none;transition:opacity .35s ease;}
+.love-card-modal.show{opacity:1;pointer-events:auto;}
+.love-card-inner{position:relative;max-width:340px;width:100%;background:#0d0a14;border-radius:22px;padding:10px;border:1px solid rgba(255,130,180,.55);box-shadow:0 0 20px rgba(255,100,160,.55),0 0 60px rgba(255,100,160,.35),0 25px 60px rgba(0,0,0,.6);transform:scale(.85) translateY(10px);transition:transform .35s cubic-bezier(.34,1.56,.64,1);}
+.love-card-modal.show .love-card-inner{transform:scale(1) translateY(0);}
+.love-card-photo-wrap{width:100%;aspect-ratio:4/5;border-radius:16px;overflow:hidden;background:#1a1420;}
+.love-card-photo-wrap img{width:100%;height:100%;object-fit:cover;display:block;}
+.love-card-close{position:absolute;top:-14px;right:-14px;width:34px;height:34px;border-radius:50%;border:1px solid rgba(255,255,255,.5);background:rgba(10,8,16,.9);color:#fff;font-size:15px;cursor:pointer;line-height:1;z-index:2;box-shadow:0 0 14px rgba(255,100,160,.6);}
+.love-card-close:hover{background:rgba(255,95,150,.85);}
+.love-card-caption{padding:16px 14px 10px;font-size:.92rem;line-height:1.65;color:#3a2233;background:#fff8fb;border-radius:12px;margin-top:10px;text-align:center;}
+</style>
+</head>
+<body>
+<div id="star-bg"></div>
+<div id="dust-bg"></div>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/",
+  "gsap": "https://unpkg.com/gsap@3.12.5/index.js"
+} }
+<\/script>
+<div id="entry-modal">
+  <div class="entry-wrap">
+    <div class="whale-holder">
+      <svg id="whale-svg" viewBox="0 0 300 200" width="260" height="180">
+        <defs>
+          <linearGradient id="whaleGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#8fd0ff" /><stop offset="45%" stop-color="#a86bff" /><stop offset="100%" stop-color="#ff8fd6" />
+          </linearGradient>
+        </defs>
+        <path d="M18 118 C 10 90, 35 55, 78 48 C 96 30, 128 18, 158 22 C 150 30, 146 40, 150 50 C 190 48, 232 62, 252 90 L 276 78 L 268 100 L 284 112 L 262 116 C 266 128, 262 140, 250 146 C 252 134, 246 126, 236 124 C 200 138, 150 140, 112 128 C 84 138, 52 136, 32 120 C 28 128, 22 130, 14 128 C 18 124, 20 121, 18 118 Z" fill="url(#whaleGrad)" />
+        <circle cx="118" cy="70" r="3" fill="#0a0a12" opacity="0.7" />
+      </svg>
+      <div class="whale-sparkles" id="whale-sparkles"></div>
+    </div>
+    <div class="entry-loading" id="entry-loading"><div class="spinner"></div><span>Đang tải...</span></div>
+    <button class="entry-button" id="entry-button" hidden>Khám phá</button>
+  </div>
+</div>
+<audio id="bg-music" preload="auto" loop></audio>
+<button id="music-toggle" class="music-toggle" aria-label="Bật/tắt nhạc" hidden>
+  <svg id="music-icon-on" viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M9 18V5l12-2v13M9 18a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm12-2a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /></svg>
+  <svg id="music-icon-off" viewBox="0 0 24 24" width="18" height="18" hidden><path fill="currentColor" d="M9 18V5l12-2v13M9 18a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm12-2a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" opacity="0.4" /><line x1="3" y1="3" x2="21" y2="21" stroke="currentColor" stroke-width="2" /></svg>
+</button>
+<div id="vignette"></div>
+<div id="overlay">
+  <div class="header">
+    <div class="title" id="main-title">Thiên Hà Của Chúng Ta</div>
+    <div class="status-pill" id="status-text">Trạng thái: Ổn định</div>
+  </div>
+  <div class="hud-bottom">
+    <div><div class="metric">KỶ NIỆM: <span class="val" id="mem-val">đang tải...</span></div><div class="metric">QUỸ ĐẠO: <span class="val" id="lensing-val">HÀI HOÀ</span></div></div>
+    <div style="text-align:right"><div class="metric">NHỊP TIM: <span class="val" id="vel-val">Đều đặn</span></div><div class="metric">YÊU THƯƠNG: <span class="val" id="letter-count">6</span></div></div>
+  </div>
+  <div class="hint" id="hint-text">💗 Chạm vào một tấm ảnh đang trôi để đọc lời nhắn nhé</div>
+</div>
+<div id="love-card" class="love-card-modal">
+  <div class="love-card-inner">
+    <button id="love-card-close" class="love-card-close" aria-label="Đóng">✕</button>
+    <div class="love-card-photo-wrap"><img id="love-card-photo" src="" alt="" /></div>
+    <div class="love-card-caption" id="love-card-caption"></div>
+  </div>
+</div>
+<script async src="https://unpkg.com/es-module-shims@1.8.0/dist/es-module-shims.js"><\/script>
+<script type="module">
+${dataScript}
+import * as THREE from "three";
+import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import gsap from "gsap";
+
+const whaleSparkles = document.getElementById("whale-sparkles");
+for (let i = 0; i < 26; i++) {
+  const s = document.createElement("span");
+  s.style.left = 8 + Math.random() * 84 + "%";
+  s.style.top = 8 + Math.random() * 84 + "%";
+  s.style.animationDelay = Math.random() * 1.6 + "s";
+  s.style.animationDuration = 1.1 + Math.random() * 1.6 + "s";
+  whaleSparkles.appendChild(s);
+}
+const entryModal = document.getElementById("entry-modal");
+const entryButton = document.getElementById("entry-button");
+const entryLoading = document.getElementById("entry-loading");
+const overlayEl = document.getElementById("overlay");
+document.getElementById("entry-button").addEventListener("click", () => {
+  const em = document.getElementById("entry-modal");
+  em.classList.add("fade-out");
+  em.addEventListener("transitionend", () => { em.style.display = "none"; }, { once: true });
+  overlayEl.classList.add("show");
+  startBgMusic();
+});
+const bgMusic = document.getElementById("bg-music");
+const musicToggle = document.getElementById("music-toggle");
+const musicIconOn = document.getElementById("music-icon-on");
+const musicIconOff = document.getElementById("music-icon-off");
+function updateMusicIcon(isPlaying){musicIconOn.hidden=!isPlaying;musicIconOff.hidden=isPlaying;musicToggle.classList.toggle("playing",isPlaying);}
+function startBgMusic(){
+  if (!bgMusic || !MUSIC_SRC) return;
+  bgMusic.src = MUSIC_SRC;
+  bgMusic.volume = 0.5;
+  bgMusic.play().then(()=>{musicToggle.hidden=false;updateMusicIcon(true);}).catch(()=>{musicToggle.hidden=false;updateMusicIcon(false);});
+}
+if (musicToggle) {
+  musicToggle.addEventListener("click", () => {
+    if (bgMusic.paused) { bgMusic.play().then(()=>updateMusicIcon(true)).catch(()=>updateMusicIcon(false)); }
+    else { bgMusic.pause(); updateMusicIcon(false); }
+  });
+}
+document.getElementById("love-card-close").addEventListener("click", hideLoveCard);
+
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(42, window.innerWidth/window.innerHeight, 0.1, 1000);
+camera.position.set(0, 16, 62);
+const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.5;
+document.body.appendChild(renderer.domElement);
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true; controls.dampingFactor = 0.04;
+controls.autoRotate = true; controls.autoRotateSpeed = 0.5;
+controls.minDistance = 20; controls.maxDistance = 130;
+
+const CARD_ORBIT_MIN = 11, CARD_ORBIT_MAX = 34;
+const planetGroup = new THREE.Group(); scene.add(planetGroup);
+const planetMat = new THREE.MeshBasicMaterial({ color: 0xfff3f8 });
+const planetGeo = new THREE.SphereGeometry(5, 64, 64);
+planetGroup.add(new THREE.Mesh(planetGeo, planetMat));
+const auraMat = new THREE.ShaderMaterial({
+  uniforms: { uIntensity: { value: 1.0 } },
+  vertexShader: \`varying vec3 vNormal; varying vec3 vView; void main(){ vNormal=normalize(normalMatrix*normal); vView=normalize(-(modelViewMatrix*vec4(position,1.0)).xyz); gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0); }\`,
+  fragmentShader: \`uniform float uIntensity; varying vec3 vNormal; varying vec3 vView; void main(){ float rim=pow(1.0-max(dot(vNormal,vView),0.0),3.2); vec3 glow=mix(vec3(1.0,0.75,0.9),vec3(0.85,0.7,1.0),0.4); gl_FragColor=vec4(glow*rim*uIntensity*4.0,1.0); }\`,
+  side: THREE.BackSide, transparent: true, blending: THREE.AdditiveBlending,
+});
+planetGroup.add(new THREE.Mesh(new THREE.SphereGeometry(5.6, 64, 64), auraMat));
+
+function makeRingTexture(){
+  const size=512; const canvas=document.createElement("canvas"); canvas.width=size; canvas.height=32;
+  const ctx=canvas.getContext("2d"); const grad=ctx.createLinearGradient(0,0,size,0);
+  grad.addColorStop(0.0,"rgba(255,235,245,0)"); grad.addColorStop(0.25,"rgba(255,235,245,0.55)");
+  grad.addColorStop(0.5,"rgba(255,255,255,0.95)"); grad.addColorStop(0.75,"rgba(230,210,255,0.55)"); grad.addColorStop(1.0,"rgba(230,210,255,0)");
+  ctx.fillStyle=grad; ctx.fillRect(0,0,size,32); return new THREE.CanvasTexture(canvas);
+}
+const ringGeo = new THREE.RingGeometry(7.6, 12.5, 128);
+const ringPos = ringGeo.attributes.position; const ringUv = ringGeo.attributes.uv; const v3 = new THREE.Vector3();
+for (let i=0;i<ringPos.count;i++){ v3.fromBufferAttribute(ringPos,i); const r=(v3.length()-7.6)/(12.5-7.6); ringUv.setXY(i,r,0.5); }
+const ringMat = new THREE.MeshBasicMaterial({ map: makeRingTexture(), transparent:true, side: THREE.DoubleSide, blending: THREE.AdditiveBlending, depthWrite:false });
+const ringMesh = new THREE.Mesh(ringGeo, ringMat);
+ringMesh.rotation.x = Math.PI/2.35; ringMesh.rotation.y = 0.15;
+planetGroup.add(ringMesh);
+
+function makeDustTexture(){
+  const size=64; const canvas=document.createElement("canvas"); canvas.width=canvas.height=size;
+  const ctx=canvas.getContext("2d"); const g=ctx.createRadialGradient(size/2,size/2,0,size/2,size/2,size/2);
+  g.addColorStop(0,"rgba(255,255,255,1)"); g.addColorStop(1,"rgba(255,255,255,0)");
+  ctx.fillStyle=g; ctx.fillRect(0,0,size,size); return new THREE.CanvasTexture(canvas);
+}
+const dustCount = 2200;
+const dustPos = new Float32Array(dustCount*3); const dustSpeed = new Float32Array(dustCount);
+for (let i=0;i<dustCount;i++){
+  const r=15+Math.random()*55, theta=Math.random()*Math.PI*2, y=(Math.random()-0.5)*40;
+  dustPos[i*3]=Math.cos(theta)*r; dustPos[i*3+1]=y; dustPos[i*3+2]=Math.sin(theta)*r;
+  dustSpeed[i]=0.15+Math.random()*0.35;
+}
+const dustGeo = new THREE.BufferGeometry();
+dustGeo.setAttribute("position", new THREE.BufferAttribute(dustPos, 3));
+const dustMat = new THREE.PointsMaterial({ size:0.35, map: makeDustTexture(), transparent:true, opacity:0.75, depthWrite:false, blending: THREE.AdditiveBlending, color:0xffffff });
+const dustPoints = new THREE.Points(dustGeo, dustMat);
+scene.add(dustPoints);
+
+function roundRect(ctx,x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
+function makePhotoTexture(size=300){
+  const canvas=document.createElement("canvas"); canvas.width=size; canvas.height=Math.round(size*1.2);
+  const ctx=canvas.getContext("2d"); const grad=ctx.createLinearGradient(0,0,0,canvas.height);
+  grad.addColorStop(0,"#ffe4f0"); grad.addColorStop(1,"#ffc2de");
+  ctx.fillStyle=grad; roundRect(ctx,0,0,canvas.width,canvas.height,22); ctx.fill();
+  return { canvas, ctx, texture: new THREE.CanvasTexture(canvas) };
+}
+function drawCardPhoto(ctx,canvas,img,glowColor){
+  const w=canvas.width, h=canvas.height, pad=w*0.045;
+  ctx.clearRect(0,0,w,h);
+  ctx.save(); ctx.shadowColor=glowColor; ctx.shadowBlur=w*0.14; roundRect(ctx,0,0,w,h,20); ctx.fillStyle="#ffffff"; ctx.fill(); ctx.restore();
+  ctx.save(); roundRect(ctx,pad,pad,w-pad*2,h-pad*2,14); ctx.clip();
+  const s=Math.max((w-pad*2)/img.width,(h-pad*2)/img.height); const iw=img.width*s, ih=img.height*s;
+  ctx.drawImage(img, pad+(w-pad*2-iw)/2, pad+(h-pad*2-ih)/2, iw, ih); ctx.restore();
+  ctx.save(); roundRect(ctx,pad,pad,w-pad*2,h-pad*2,14); ctx.lineWidth=5; ctx.strokeStyle="#ffffff"; ctx.stroke(); ctx.restore();
+}
+const ACCENT_GLOW = ["#ff8fb1","#ffd479","#8fd0ff","#c58fff","#7effc0","#ff9e6d"];
+const cardGroup = new THREE.Group(); scene.add(cardGroup);
+const cardOrbiters = [];
+function addPhotoCard(src, i){
+  const { canvas, ctx, texture } = makePhotoTexture();
+  const glow = ACCENT_GLOW[i % ACCENT_GLOW.length];
+  const mat = new THREE.SpriteMaterial({ map: texture, transparent:true, depthWrite:false, rotation:(Math.random()-0.5)*0.5 });
+  const sprite = new THREE.Sprite(mat);
+  const scale = 4.4 + Math.random()*1.6;
+  sprite.scale.set(scale, scale*1.2, 1);
+  sprite.userData.isCard = true; sprite.userData.cardIndex = i;
+  cardGroup.add(sprite);
+  const radius = CARD_ORBIT_MIN + Math.random()*(CARD_ORBIT_MAX-CARD_ORBIT_MIN);
+  const angle = Math.random()*Math.PI*2;
+  cardOrbiters.push({ sprite, radius, angle, baseY:(Math.random()-0.5)*16, phase:Math.random()*Math.PI*2, speed:0.35+Math.random()*0.35 });
+  const img = new Image();
+  img.onload = () => { drawCardPhoto(ctx, canvas, img, glow); texture.needsUpdate = true; };
+  img.onerror = () => {
+    ctx.save(); roundRect(ctx,8,8,canvas.width-16,canvas.height-16,14); ctx.lineWidth=5; ctx.strokeStyle="#ffffff"; ctx.stroke(); ctx.restore();
+    texture.needsUpdate = true;
+  };
+  img.src = src;
+}
+function initPhotos(){
+  document.getElementById("mem-val").textContent = PHOTOS.length + " khoảnh khắc";
+  document.getElementById("letter-count").textContent = MESSAGES.length;
+  PHOTOS.forEach((src, i) => addPhotoCard(src, i));
+  entryLoading.style.display = "none";
+  entryButton.hidden = false;
+}
+initPhotos();
+
+function makeHeartTexture(size=128){
+  const canvas=document.createElement("canvas"); canvas.width=canvas.height=size;
+  const ctx=canvas.getContext("2d");
+  ctx.save(); ctx.shadowColor="#ff2e63"; ctx.shadowBlur=size*0.22; ctx.fillStyle="#ff3d78";
+  ctx.beginPath(); const x=size/2, y=size*0.32;
+  ctx.moveTo(x,y);
+  ctx.bezierCurveTo(x,y-size*0.18,x-size*0.42,y-size*0.18,x-size*0.42,y+size*0.08);
+  ctx.bezierCurveTo(x-size*0.42,y+size*0.34,x-size*0.18,y+size*0.5,x,y+size*0.66);
+  ctx.bezierCurveTo(x+size*0.18,y+size*0.5,x+size*0.42,y+size*0.34,x+size*0.42,y+size*0.08);
+  ctx.bezierCurveTo(x+size*0.42,y-size*0.18,x,y-size*0.18,x,y);
+  ctx.closePath(); ctx.fill(); ctx.restore();
+  return new THREE.CanvasTexture(canvas);
+}
+function makeSparkleTexture(size=96){
+  const canvas=document.createElement("canvas"); canvas.width=canvas.height=size;
+  const ctx=canvas.getContext("2d"); const c=size/2;
+  ctx.save(); ctx.shadowColor="#ffe98a"; ctx.shadowBlur=size*0.35; ctx.fillStyle="#ffe98a";
+  ctx.beginPath();
+  ctx.moveTo(c,c-size*0.42); ctx.lineTo(c+size*0.12,c-size*0.12); ctx.lineTo(c+size*0.42,c); ctx.lineTo(c+size*0.12,c+size*0.12);
+  ctx.lineTo(c,c+size*0.42); ctx.lineTo(c-size*0.12,c+size*0.12); ctx.lineTo(c-size*0.42,c); ctx.lineTo(c-size*0.12,c-size*0.12);
+  ctx.closePath(); ctx.fill(); ctx.restore();
+  return new THREE.CanvasTexture(canvas);
+}
+const heartTex = makeHeartTexture(); const sparkleTex = makeSparkleTexture();
+const decorGroup = new THREE.Group(); scene.add(decorGroup);
+const decorOrbiters = [];
+function addDecor(tex, count, sizeRange, orbitMin, orbitMax){
+  for (let i=0;i<count;i++){
+    const mat = new THREE.SpriteMaterial({ map: tex, transparent:true, depthWrite:false });
+    const sprite = new THREE.Sprite(mat);
+    const s = sizeRange[0] + Math.random()*(sizeRange[1]-sizeRange[0]);
+    sprite.scale.set(s, s, 1);
+    decorGroup.add(sprite);
+    const radius = orbitMin + Math.random()*(orbitMax-orbitMin);
+    const angle = Math.random()*Math.PI*2;
+    decorOrbiters.push({ sprite, radius, angle, baseY:(Math.random()-0.5)*18, phase:Math.random()*Math.PI*2, speed:0.3+Math.random()*0.4, pulse:Math.random()*Math.PI*2, baseScale:s });
+  }
+}
+addDecor(heartTex, 14, [1.6,3.0], CARD_ORBIT_MIN, CARD_ORBIT_MAX);
+addDecor(sparkleTex, 22, [0.7,1.6], CARD_ORBIT_MIN-2, CARD_ORBIT_MAX+6);
+
+const raycaster = new THREE.Raycaster(); const pointer = new THREE.Vector2();
+const loveCard = document.getElementById("love-card");
+const loveCardPhoto = document.getElementById("love-card-photo");
+const loveCardCaption = document.getElementById("love-card-caption");
+function openLoveCard(index, src){ loveCardPhoto.src = src; loveCardCaption.textContent = MESSAGES[index % MESSAGES.length]; loveCard.classList.add("show"); }
+function hideLoveCard(){ loveCard.classList.remove("show"); }
+loveCard.addEventListener("click", (e) => { if (e.target === loveCard) hideLoveCard(); });
+function handlePointer(clientX, clientY){
+  const rect = renderer.domElement.getBoundingClientRect();
+  pointer.x = ((clientX-rect.left)/rect.width)*2-1; pointer.y = -((clientY-rect.top)/rect.height)*2+1;
+  raycaster.setFromCamera(pointer, camera);
+  const hits = raycaster.intersectObjects(cardGroup.children, false);
+  if (hits.length){ const obj = hits[0].object; openLoveCard(obj.userData.cardIndex, obj.material.map.image?.src || ""); }
+}
+renderer.domElement.addEventListener("click", (e) => handlePointer(e.clientX, e.clientY));
+renderer.domElement.addEventListener("pointermove", (e) => {
+  const rect = renderer.domElement.getBoundingClientRect();
+  pointer.x = ((e.clientX-rect.left)/rect.width)*2-1; pointer.y = -((e.clientY-rect.top)/rect.height)*2+1;
+  raycaster.setFromCamera(pointer, camera);
+  const hits = raycaster.intersectObjects(cardGroup.children, false);
+  renderer.domElement.style.cursor = hits.length ? "pointer" : "grab";
+}, { passive: true });
+
+const config = [
+  { title:"Thiên Hà Của Chúng Ta", status:"Trạng thái: Ổn định", intensity:1.0, rotate:0.5, color:"#ffb2d9", vel:"Đều đặn" },
+  { title:"Những Kỷ Niệm Trôi Quanh", status:"Trạng thái: Rung động", intensity:1.35, rotate:1.1, color:"#ffd479", vel:"Rộn ràng" },
+  { title:"Mãi Mãi Bên Nhau", status:"Trạng thái: Bất tận", intensity:1.8, rotate:0.25, color:"#ff5f96", vel:"Dâng trào" },
+];
+let stateIdx = 0;
+const mainTitle = document.getElementById("main-title");
+const statusText = document.getElementById("status-text");
+const velVal = document.getElementById("vel-val");
+function transition(){
+  stateIdx = (stateIdx+1) % config.length;
+  const s = config[stateIdx];
+  gsap.to(auraMat.uniforms.uIntensity, { value: s.intensity, duration: 3 });
+  gsap.to(controls, { autoRotateSpeed: s.rotate, duration: 3 });
+  gsap.to([mainTitle, statusText, ".val"], { opacity: 0, duration: 0.8, onComplete: () => {
+    mainTitle.innerText = s.title; statusText.innerText = s.status;
+    statusText.style.color = s.color; statusText.style.borderColor = s.color;
+    velVal.innerText = s.vel; velVal.style.color = s.color;
+    gsap.to([mainTitle, statusText, ".val"], { opacity: 1, duration: 1.2 });
+  }});
+}
+setInterval(transition, 10000);
+
+const clock = new THREE.Clock();
+function updateOrbiters(list, time){
+  list.forEach((o) => {
+    const currentAngle = o.angle + time*o.speed*0.06;
+    o.sprite.position.set(Math.cos(currentAngle)*o.radius, o.baseY + Math.sin(time*0.4+o.phase)*1.2, Math.sin(currentAngle)*o.radius);
+  });
+}
+function animate(){
+  const time = clock.getElapsedTime();
+  planetGroup.rotation.y += 0.0015;
+  updateOrbiters(cardOrbiters, time); updateOrbiters(decorOrbiters, time);
+  decorOrbiters.forEach((o) => {
+    if (o.sprite.material.map === sparkleTex){ const pulse = 0.7 + Math.sin(time*2.4+o.pulse)*0.3; o.sprite.material.opacity = pulse; }
+  });
+  const dp = dustGeo.attributes.position;
+  for (let i=0;i<dustCount;i++){ let y = dp.getY(i) + dustSpeed[i]*0.02; if (y>22) y=-22; dp.setY(i,y); }
+  dp.needsUpdate = true;
+  controls.update(); renderer.render(scene, camera);
+  requestAnimationFrame(animate);
+}
+window.addEventListener("resize", () => {
+  camera.aspect = window.innerWidth/window.innerHeight; camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+animate();
+
+const sb = document.getElementById("star-bg");
+for (let i=0;i<700;i++){
+  let s = document.createElement("div"); s.className="star";
+  let z = Math.random()*3+1; s.style.width=z+"px"; s.style.height=z+"px";
+  s.style.left = Math.random()*100+"%"; s.style.top = Math.random()*100+"%";
+  s.style.animationDuration = 2+Math.random()*4+"s";
+  sb.appendChild(s);
+}
+setInterval(() => {
+  let m = document.createElement("div"); m.className="meteor";
+  m.style.left = 60+Math.random()*40+"%"; m.style.top = Math.random()*30+"%";
+  sb.appendChild(m); setTimeout(() => m.remove(), 4000);
+}, 1200);
+const db = document.getElementById("dust-bg");
+for (let i=0;i<60;i++){
+  let d = document.createElement("div"); d.className="dust";
+  const z = 1+Math.random()*2.5; d.style.width=z+"px"; d.style.height=z+"px";
+  d.style.left = Math.random()*100+"%"; d.style.bottom = "-5%";
+  d.style.setProperty("--dx", Math.random()*60-30+"px");
+  d.style.animationDuration = 6+Math.random()*8+"s"; d.style.animationDelay = Math.random()*8+"s";
+  db.appendChild(d);
+}
+<\/script>
+</body>
+</html>`;
+}
+
+function buildSiteHTML() {
+  return templateId === "galaxy" ? buildGalaxySiteHTML() : buildHeartsSiteHTML();
+}
+
+function withGeneratedBlob(cb) {
+  const html = buildSiteHTML();
+  const blob = new Blob([html], { type: "text/html" });
+  cb(URL.createObjectURL(blob));
+}
+document.getElementById("btnPreview").addEventListener("click", () => {
+  withGeneratedBlob((url) => window.open(url, "_blank"));
+});
+let LINK4M_URL = "";
+let TOKEN_EXPIRY_MIN = 20;
+fetch("settings.json", { cache: "no-store" })
+  .then((res) => res.json())
+  .then((s) => { LINK4M_URL = s.link4mUrl || ""; TOKEN_EXPIRY_MIN = s.tokenExpiryMinutes || 20; })
+  .catch(() => {});
+
+document.getElementById("btnDownload").addEventListener("click", () => {
+  const html = buildSiteHTML();
+  const filename = templateId === "galaxy" ? "vu-tru-cua-chung-ta.html" : "qua-tang.html";
+  const payload = JSON.stringify({ content: html, filename, createdAt: Date.now() });
+  try {
+    localStorage.setItem("pending_gift", payload);
+  } catch (e) {
+    alert("File hơi nặng nên trình duyệt không lưu tạm được. Hãy bớt số ảnh hoặc chọn nhạc nhẹ hơn rồi thử lại.");
+    return;
+  }
+  if (!LINK4M_URL) {
+    alert("Chưa cấu hình link4m trong settings.json — tải trực tiếp tạm thời.");
+    withGeneratedBlob((url) => {
+      const a = document.createElement("a");
+      a.href = url; a.download = filename;
+      document.body.appendChild(a); a.click(); a.remove();
+    });
+    return;
+  }
+  window.location.href = LINK4M_URL;
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+[
+  {
+    "id": "hearts",
+    "name": "Trái Tim Rơi",
+    "description": "Ảnh và lời nhắn rơi nhẹ trên nền bầu trời, chạm màn hình để pháo hoa trái tim.",
+    "preview": "",
+    "badge": "🩷"
+  },
+  {
+    "id": "galaxy",
+    "name": "Vũ Trụ Của Chúng Ta",
+    "description": "Ảnh trôi quanh hành tinh phát sáng giữa dải ngân hà 3D, chạm vào ảnh để đọc lời nhắn.",
+    "preview": "",
+    "badge": "🌌"
+  }
+]
