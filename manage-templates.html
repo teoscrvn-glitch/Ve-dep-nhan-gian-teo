@@ -1,0 +1,294 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Admin – Quản Lý Mẫu</title>
+<style>
+  :root{
+    --pink:#e93d82;
+    --pink-light:#ff92ad;
+    --bg-deep:#170a13;
+    --bg-card:#241220;
+    --border:#3d1f34;
+    --text:#fbe8f0;
+    --text-dim:#c99aab;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    min-height:100vh;
+    background:
+      radial-gradient(circle at 20% 0%, #3a0f2a 0%, transparent 45%),
+      radial-gradient(circle at 90% 30%, #2a0f22 0%, transparent 40%),
+      var(--bg-deep);
+    color:var(--text);
+    font-family:"Segoe UI","Helvetica Neue",Arial,sans-serif;
+    padding:28px 16px 80px;
+  }
+  .wrap{max-width:640px;margin:0 auto;}
+  a.back{color:var(--text-dim);font-size:.8rem;text-decoration:none;}
+  h1{
+    font-size:1.5rem;
+    margin:10px 0 4px;
+    background:linear-gradient(135deg,#ff92ad,#e93d82);
+    -webkit-background-clip:text;
+    background-clip:text;
+    color:transparent;
+    font-weight:800;
+  }
+  p.subtitle{color:var(--text-dim);margin:0 0 24px;font-size:.9rem;line-height:1.5;}
+  .card{background:var(--bg-card);border:1px solid var(--border);border-radius:16px;padding:18px;margin-bottom:14px;}
+  .card h2{font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--pink-light);margin:0 0 4px;}
+
+  .tpl-item{display:flex;gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid var(--border);}
+  .tpl-item:last-child{border-bottom:none;}
+  .tpl-cover{width:52px;height:52px;border-radius:10px;background:#1a0d16;background-size:cover;background-position:center;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1.3rem;}
+  .tpl-info{flex:1;min-width:0;}
+  .tpl-info .name{font-weight:700;font-size:.92rem;}
+  .tpl-info .meta{font-size:.75rem;color:var(--text-dim);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .tpl-actions{display:flex;gap:6px;flex-shrink:0;}
+  .tpl-actions button{
+    border:1px solid var(--border);
+    background:#1a0d16;
+    color:var(--text);
+    border-radius:8px;
+    padding:6px 10px;
+    font-size:.78rem;
+    cursor:pointer;
+  }
+  .tpl-actions button.danger{color:#ff8a8a;border-color:#5a2323;}
+  .empty-note{color:var(--text-dim);font-size:.85rem;padding:10px 0;}
+
+  label{display:block;font-size:.8rem;color:var(--text-dim);margin:14px 0 6px;}
+  label:first-of-type{margin-top:0;}
+  input[type=text], input[type=url], textarea{
+    width:100%;
+    background:#1a0d16;
+    border:1px solid var(--border);
+    border-radius:10px;
+    color:var(--text);
+    padding:11px 12px;
+    font-size:.88rem;
+    font-family:inherit;
+  }
+  textarea{min-height:70px;resize:vertical;}
+  .hint-small{font-size:.75rem;color:var(--text-dim);margin-top:4px;}
+  .form-actions{display:flex;gap:10px;margin-top:18px;}
+  .form-actions button{
+    flex:1;
+    padding:13px;
+    border:none;
+    border-radius:10px;
+    font-weight:700;
+    font-size:.88rem;
+    cursor:pointer;
+  }
+  .btn-save{background:linear-gradient(135deg,#ff6fa5,#e93d82);color:#fff;}
+  .btn-cancel{background:#1a0d16;color:var(--text-dim);border:1px solid var(--border) !important;}
+
+  .actions-top{display:flex;gap:10px;margin-bottom:18px;}
+  .actions-top button{
+    flex:1;
+    padding:14px;
+    border:none;
+    border-radius:12px;
+    font-weight:700;
+    font-size:.9rem;
+    cursor:pointer;
+  }
+  .btn-add{background:#2c1723;color:var(--pink-light);border:1px solid var(--pink);}
+  .btn-export{background:linear-gradient(135deg,#ff6fa5,#e93d82);color:#fff;box-shadow:0 4px 18px rgba(233,61,130,.4);}
+  .status{font-size:.8rem;color:#7ee787;margin-top:8px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="index.html">← Về trang menu</a>
+  <h1>Admin – Quản Lý Mẫu 🗂️</h1>
+  <p class="subtitle">Thêm / sửa / xoá mẫu hiển thị ở trang menu. Xong thì bấm "Xuất templates.json"
+  rồi upload đè file đó lên host — không cần sửa code.</p>
+
+  <div class="actions-top">
+    <button class="btn-add" id="btnAddNew">+ Thêm mẫu mới</button>
+    <button class="btn-export" id="btnExport">⬇ Xuất templates.json</button>
+  </div>
+
+  <div class="card">
+    <h2>Danh sách mẫu hiện tại</h2>
+    <div id="tplList"></div>
+  </div>
+
+  <div class="card" id="formCard" style="display:none;">
+    <h2 id="formTitle">Thêm mẫu mới</h2>
+
+    <label>Tên mẫu *</label>
+    <input type="text" id="fName" placeholder="Vd: Trái Tim Rơi" />
+
+    <label>ID (tự sinh từ tên, dùng trong link — có thể sửa tay)</label>
+    <input type="text" id="fId" placeholder="vd: hearts" />
+    <div class="hint-small">Đây là phần gắn vào link: admin.html?template=ID — mỗi mẫu phải có ID khác nhau.</div>
+
+    <label>Mô tả ngắn</label>
+    <textarea id="fDesc" placeholder="Câu mô tả hiện dưới tên mẫu ở menu"></textarea>
+
+    <label>Tag / nhãn</label>
+    <input type="text" id="fTag" placeholder="Vd: 🩷 Lãng mạn" />
+
+    <label>Link ảnh bìa</label>
+    <input type="url" id="fCover" placeholder="Dán link ảnh (https://...)" />
+    <div class="hint-small">Để trống nếu chưa có ảnh, menu sẽ hiện icon mặc định.</div>
+
+    <label>Link4M của mẫu này *</label>
+    <input type="url" id="fLink4m" placeholder="https://link4m.com/go/..." />
+    <div class="hint-small">Người chọn mẫu này sẽ bị đẩy qua đúng link4m này khi bấm "Tạo file".</div>
+
+    <label>Hiệu ứng dùng (effect)</label>
+    <select id="fEffect" style="width:100%;background:#1a0d16;border:1px solid var(--border);border-radius:10px;color:var(--text);padding:11px 12px;font-size:.88rem;">
+      <option value="hearts">Trái Tim Rơi</option>
+      <option value="galaxy">Vũ Trụ 3D</option>
+    </select>
+    <div class="hint-small">Chọn đúng hiệu ứng gốc mà admin.html sẽ dùng để tạo file cho mẫu này.</div>
+
+    <div class="form-actions">
+      <button class="btn-cancel" id="btnCancel">Huỷ</button>
+      <button class="btn-save" id="btnSave">Lưu mẫu</button>
+    </div>
+  </div>
+
+  <div id="exportStatus" class="status"></div>
+</div>
+
+<script>
+let templates = [];
+let editingIndex = -1;
+
+const tplList = document.getElementById("tplList");
+const formCard = document.getElementById("formCard");
+const formTitle = document.getElementById("formTitle");
+const fName = document.getElementById("fName");
+const fId = document.getElementById("fId");
+const fDesc = document.getElementById("fDesc");
+const fTag = document.getElementById("fTag");
+const fCover = document.getElementById("fCover");
+const fLink4m = document.getElementById("fLink4m");
+const fEffect = document.getElementById("fEffect");
+
+function slugify(str) {
+  return str
+    .toLowerCase()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    .replace(/đ/g, "d")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+}
+
+function renderList() {
+  tplList.innerHTML = "";
+  if (!templates.length) {
+    tplList.innerHTML = '<div class="empty-note">Chưa có mẫu nào. Bấm "+ Thêm mẫu mới" để bắt đầu.</div>';
+    return;
+  }
+  templates.forEach((t, i) => {
+    const row = document.createElement("div");
+    row.className = "tpl-item";
+    const coverStyle = t.cover ? `background-image:url('${t.cover}')` : "";
+    row.innerHTML = `
+      <div class="tpl-cover" style="${coverStyle}">${t.cover ? "" : "💌"}</div>
+      <div class="tpl-info">
+        <div class="name">${t.name || "(chưa đặt tên)"}</div>
+        <div class="meta">id: ${t.id || "-"} · ${t.tag || "không tag"}</div>
+      </div>
+      <div class="tpl-actions">
+        <button data-i="${i}" class="editBtn">Sửa</button>
+        <button data-i="${i}" class="danger delBtn">Xoá</button>
+      </div>
+    `;
+    tplList.appendChild(row);
+  });
+  tplList.querySelectorAll(".editBtn").forEach((b) => {
+    b.onclick = () => openForm(Number(b.dataset.i));
+  });
+  tplList.querySelectorAll(".delBtn").forEach((b) => {
+    b.onclick = () => {
+      if (confirm("Xoá mẫu này khỏi danh sách?")) {
+        templates.splice(Number(b.dataset.i), 1);
+        renderList();
+      }
+    };
+  });
+}
+
+function openForm(index) {
+  editingIndex = index;
+  if (index === -1) {
+    formTitle.textContent = "Thêm mẫu mới";
+    fName.value = ""; fId.value = ""; fDesc.value = "";
+    fTag.value = ""; fCover.value = ""; fLink4m.value = "";
+    fEffect.value = "hearts";
+  } else {
+    const t = templates[index];
+    formTitle.textContent = "Sửa mẫu";
+    fName.value = t.name || ""; fId.value = t.id || ""; fDesc.value = t.description || "";
+    fTag.value = t.tag || ""; fCover.value = t.cover || ""; fLink4m.value = t.link4m || "";
+    fEffect.value = t.effect || "hearts";
+  }
+  formCard.style.display = "block";
+  formCard.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+document.getElementById("btnAddNew").addEventListener("click", () => openForm(-1));
+document.getElementById("btnCancel").addEventListener("click", () => { formCard.style.display = "none"; });
+
+fName.addEventListener("input", () => {
+  if (editingIndex === -1 && !fId.dataset.touched) {
+    fId.value = slugify(fName.value);
+  }
+});
+fId.addEventListener("input", () => { fId.dataset.touched = "1"; });
+
+document.getElementById("btnSave").addEventListener("click", () => {
+  if (!fName.value.trim()) { alert("Nhập tên mẫu đã."); return; }
+  if (!fId.value.trim()) { alert("Nhập ID cho mẫu (dùng để phân biệt trong link)."); return; }
+  if (!fLink4m.value.trim()) { alert("Nhập link4m cho mẫu này."); return; }
+  const newId = slugify(fId.value);
+  const dup = templates.some((t, i) => t.id === newId && i !== editingIndex);
+  if (dup) { alert("ID này đã dùng cho mẫu khác, đổi ID khác đi."); return; }
+
+  const entry = {
+    id: newId,
+    name: fName.value.trim(),
+    description: fDesc.value.trim(),
+    tag: fTag.value.trim(),
+    cover: fCover.value.trim(),
+    link4m: fLink4m.value.trim(),
+    effect: fEffect.value,
+  };
+  if (editingIndex === -1) templates.push(entry);
+  else templates[editingIndex] = entry;
+
+  formCard.style.display = "none";
+  renderList();
+});
+
+document.getElementById("btnExport").addEventListener("click", () => {
+  const json = JSON.stringify(templates, null, 2);
+  const blob = new Blob([json], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = "templates.json";
+  document.body.appendChild(a); a.click(); a.remove();
+  document.getElementById("exportStatus").textContent =
+    "Đã tải templates.json — upload đè lên host là menu cập nhật ngay.";
+});
+
+fetch("templates.json", { cache: "no-store" })
+  .then((res) => res.json())
+  .then((data) => { templates = Array.isArray(data) ? data : []; renderList(); })
+  .catch(() => {
+    templates = [];
+    tplList.innerHTML = '<div class="empty-note">Không đọc được templates.json hiện tại (có thể chưa tồn tại) — bắt đầu từ danh sách trống.</div>';
+  });
+</script>
+</body>
+</html>

@@ -68,6 +68,8 @@
   .card-body{padding:16px 18px 20px;}
   .card-body h2{font-size:1.05rem;margin:0 0 6px;color:var(--pink-light);}
   .card-body p{font-size:.83rem;color:var(--text-dim);line-height:1.5;margin:0 0 14px;}
+  .card-tag{display:inline-block;font-size:.7rem;color:var(--pink-light);background:rgba(233,61,130,.12);border:1px solid var(--border);padding:2px 10px;border-radius:999px;margin-bottom:8px;}
+  .manage-link{display:block;text-align:center;margin-top:30px;color:var(--text-dim);font-size:.78rem;text-decoration:none;}
   .card-body button{
     width:100%;
     padding:11px;
@@ -87,6 +89,7 @@
   <h1>Chọn Mẫu Quà Tặng 💌</h1>
   <p class="subtitle">Chọn 1 mẫu, sau đó tự thêm ảnh / lời nhắn / nhạc của riêng bạn.</p>
   <div id="grid" class="grid"></div>
+  <a class="manage-link" href="manage-templates.html">⚙️ Quản lý mẫu (admin)</a>
 </div>
 
 <script>
@@ -101,13 +104,14 @@ fetch("templates.json", { cache: "no-store" })
     templates.forEach((t) => {
       const card = document.createElement("div");
       card.className = "card";
-      const previewStyle = t.preview
-        ? `background-image:url('${t.preview}')`
+      const previewStyle = t.cover
+        ? `background-image:url('${t.cover}')`
         : "";
       card.innerHTML = `
-        <div class="card-preview" style="${previewStyle}">${t.preview ? "" : (t.badge || "💌")}</div>
+        <div class="card-preview" style="${previewStyle}">${t.cover ? "" : "💌"}</div>
         <div class="card-body">
-          <h2>${t.badge || ""} ${t.name}</h2>
+          <h2>${t.name}</h2>
+          ${t.tag ? `<div class="card-tag">${t.tag}</div>` : ""}
           <p>${t.description || ""}</p>
           <button>Chọn mẫu này</button>
         </div>

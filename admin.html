@@ -190,13 +190,27 @@ Em là duy nhất</textarea>
 
 <script>
 const params = new URLSearchParams(window.location.search);
-const templateId = params.get("template") === "galaxy" ? "galaxy" : "hearts";
-document.getElementById("templatePill").textContent =
-  templateId === "galaxy" ? "🌌 Mẫu: Vũ Trụ Của Chúng Ta" : "🩷 Mẫu: Trái Tim Rơi";
-if (templateId === "galaxy") {
-  document.getElementById("msgHint").textContent =
-    "Mỗi dòng là 1 lời nhắn hiện ra khi chạm vào 1 tấm ảnh đang trôi quanh hành tinh.";
-}
+const templateId = params.get("template") || "hearts";
+let currentTemplate = null; // filled in after templates.json loads
+let templateEffect = "hearts"; // fallback until loaded
+
+const templatesReady = fetch("templates.json", { cache: "no-store" })
+  .then((res) => res.json())
+  .then((templates) => {
+    currentTemplate = templates.find((x) => x.id === templateId) || null;
+    templateEffect = (currentTemplate && currentTemplate.effect) || "hearts";
+    document.getElementById("templatePill").textContent = currentTemplate
+      ? `${currentTemplate.tag ? currentTemplate.tag + " · " : ""}Mẫu: ${currentTemplate.name}`
+      : "⚠️ Không tìm thấy mẫu này trong templates.json";
+    if (templateEffect === "galaxy") {
+      document.getElementById("msgHint").textContent =
+        "Mỗi dòng là 1 lời nhắn hiện ra khi chạm vào 1 tấm ảnh đang trôi quanh hành tinh.";
+    }
+    LINK4M_URL = (currentTemplate && currentTemplate.link4m) || "";
+  })
+  .catch(() => {
+    document.getElementById("templatePill").textContent = "⚠️ Không đọc được templates.json";
+  });
 
 const images = []; // {name, dataUrl}
 let musicDataUrl = null;
@@ -867,7 +881,7 @@ for (let i=0;i<60;i++){
 }
 
 function buildSiteHTML() {
-  return templateId === "galaxy" ? buildGalaxySiteHTML() : buildHeartsSiteHTML();
+  return templateEffect === "galaxy" ? buildGalaxySiteHTML() : buildHeartsSiteHTML();
 }
 
 function withGeneratedBlob(cb) {
@@ -882,12 +896,17 @@ let LINK4M_URL = "";
 let TOKEN_EXPIRY_MIN = 20;
 fetch("settings.json", { cache: "no-store" })
   .then((res) => res.json())
-  .then((s) => { LINK4M_URL = s.link4mUrl || ""; TOKEN_EXPIRY_MIN = s.tokenExpiryMinutes || 20; })
+  .then((s) => { TOKEN_EXPIRY_MIN = s.tokenExpiryMinutes || 20; })
   .catch(() => {});
 
-document.getElementById("btnDownload").addEventListener("click", () => {
+document.getElementById("btnDownload").addEventListener("click", async () => {
+  await templatesReady; // đảm bảo đã biết đúng link4m + effect của mẫu này
+  if (!currentTemplate) {
+    alert("Không tìm thấy mẫu này trong templates.json — không xác định được link4m để tạo file.");
+    return;
+  }
   const html = buildSiteHTML();
-  const filename = templateId === "galaxy" ? "vu-tru-cua-chung-ta.html" : "qua-tang.html";
+  const filename = templateEffect === "galaxy" ? "vu-tru-cua-chung-ta.html" : "qua-tang.html";
   const payload = JSON.stringify({ content: html, filename, createdAt: Date.now() });
   try {
     localStorage.setItem("pending_gift", payload);
@@ -896,7 +915,7 @@ document.getElementById("btnDownload").addEventListener("click", () => {
     return;
   }
   if (!LINK4M_URL) {
-    alert("Chưa cấu hình link4m trong settings.json — tải trực tiếp tạm thời.");
+    alert("Mẫu này chưa có link4m trong templates.json — tải trực tiếp tạm thời.");
     withGeneratedBlob((url) => {
       const a = document.createElement("a");
       a.href = url; a.download = filename;
