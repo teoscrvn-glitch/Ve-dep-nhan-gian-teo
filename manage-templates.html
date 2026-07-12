@@ -140,13 +140,14 @@
     <div class="hint-small">Để trống nếu chưa có ảnh, menu sẽ hiện icon mặc định.</div>
 
     <label>Link4M của mẫu này *</label>
-    <input type="url" id="fLink4m" placeholder="https://link4m.com/go/..." />
-    <div class="hint-small">Người chọn mẫu này sẽ bị đẩy qua đúng link4m này khi bấm "Tạo file".</div>
+    <textarea id="fLink4m" placeholder="Mỗi dòng 1 link, vd:&#10;https://link4m.com/go/abc&#10;https://link4m.com/go/xyz" style="min-height:90px;"></textarea>
+    <div class="hint-small">Nhập nhiều link (mỗi dòng 1 link) để hệ thống tự random 1 link mỗi lượt tải — giúp chia đều view qua nhiều tài khoản link4m. Chỉ 1 link cũng được.</div>
 
     <label>Hiệu ứng dùng (effect)</label>
     <select id="fEffect" style="width:100%;background:#1a0d16;border:1px solid var(--border);border-radius:10px;color:var(--text);padding:11px 12px;font-size:.88rem;">
       <option value="hearts">Trái Tim Rơi</option>
       <option value="galaxy">Vũ Trụ 3D</option>
+      <option value="letters">Thư Tình Từng Trang</option>
     </select>
     <div class="hint-small">Chọn đúng hiệu ứng gốc mà admin.html sẽ dùng để tạo file cho mẫu này.</div>
 
@@ -160,135 +161,13 @@
 </div>
 
 <script>
-let templates = [];
-let editingIndex = -1;
-
-const tplList = document.getElementById("tplList");
-const formCard = document.getElementById("formCard");
-const formTitle = document.getElementById("formTitle");
-const fName = document.getElementById("fName");
-const fId = document.getElementById("fId");
-const fDesc = document.getElementById("fDesc");
-const fTag = document.getElementById("fTag");
-const fCover = document.getElementById("fCover");
-const fLink4m = document.getElementById("fLink4m");
-const fEffect = document.getElementById("fEffect");
-
-function slugify(str) {
-  return str
-    .toLowerCase()
-    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-    .replace(/đ/g, "d")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/(^-|-$)/g, "");
-}
-
-function renderList() {
-  tplList.innerHTML = "";
-  if (!templates.length) {
-    tplList.innerHTML = '<div class="empty-note">Chưa có mẫu nào. Bấm "+ Thêm mẫu mới" để bắt đầu.</div>';
-    return;
-  }
-  templates.forEach((t, i) => {
-    const row = document.createElement("div");
-    row.className = "tpl-item";
-    const coverStyle = t.cover ? `background-image:url('${t.cover}')` : "";
-    row.innerHTML = `
-      <div class="tpl-cover" style="${coverStyle}">${t.cover ? "" : "💌"}</div>
-      <div class="tpl-info">
-        <div class="name">${t.name || "(chưa đặt tên)"}</div>
-        <div class="meta">id: ${t.id || "-"} · ${t.tag || "không tag"}</div>
-      </div>
-      <div class="tpl-actions">
-        <button data-i="${i}" class="editBtn">Sửa</button>
-        <button data-i="${i}" class="danger delBtn">Xoá</button>
-      </div>
-    `;
-    tplList.appendChild(row);
-  });
-  tplList.querySelectorAll(".editBtn").forEach((b) => {
-    b.onclick = () => openForm(Number(b.dataset.i));
-  });
-  tplList.querySelectorAll(".delBtn").forEach((b) => {
-    b.onclick = () => {
-      if (confirm("Xoá mẫu này khỏi danh sách?")) {
-        templates.splice(Number(b.dataset.i), 1);
-        renderList();
-      }
-    };
-  });
-}
-
-function openForm(index) {
-  editingIndex = index;
-  if (index === -1) {
-    formTitle.textContent = "Thêm mẫu mới";
-    fName.value = ""; fId.value = ""; fDesc.value = "";
-    fTag.value = ""; fCover.value = ""; fLink4m.value = "";
-    fEffect.value = "hearts";
-  } else {
-    const t = templates[index];
-    formTitle.textContent = "Sửa mẫu";
-    fName.value = t.name || ""; fId.value = t.id || ""; fDesc.value = t.description || "";
-    fTag.value = t.tag || ""; fCover.value = t.cover || ""; fLink4m.value = t.link4m || "";
-    fEffect.value = t.effect || "hearts";
-  }
-  formCard.style.display = "block";
-  formCard.scrollIntoView({ behavior: "smooth", block: "start" });
-}
-
-document.getElementById("btnAddNew").addEventListener("click", () => openForm(-1));
-document.getElementById("btnCancel").addEventListener("click", () => { formCard.style.display = "none"; });
-
-fName.addEventListener("input", () => {
-  if (editingIndex === -1 && !fId.dataset.touched) {
-    fId.value = slugify(fName.value);
-  }
-});
-fId.addEventListener("input", () => { fId.dataset.touched = "1"; });
-
-document.getElementById("btnSave").addEventListener("click", () => {
-  if (!fName.value.trim()) { alert("Nhập tên mẫu đã."); return; }
-  if (!fId.value.trim()) { alert("Nhập ID cho mẫu (dùng để phân biệt trong link)."); return; }
-  if (!fLink4m.value.trim()) { alert("Nhập link4m cho mẫu này."); return; }
-  const newId = slugify(fId.value);
-  const dup = templates.some((t, i) => t.id === newId && i !== editingIndex);
-  if (dup) { alert("ID này đã dùng cho mẫu khác, đổi ID khác đi."); return; }
-
-  const entry = {
-    id: newId,
-    name: fName.value.trim(),
-    description: fDesc.value.trim(),
-    tag: fTag.value.trim(),
-    cover: fCover.value.trim(),
-    link4m: fLink4m.value.trim(),
-    effect: fEffect.value,
-  };
-  if (editingIndex === -1) templates.push(entry);
-  else templates[editingIndex] = entry;
-
-  formCard.style.display = "none";
-  renderList();
-});
-
-document.getElementById("btnExport").addEventListener("click", () => {
-  const json = JSON.stringify(templates, null, 2);
-  const blob = new Blob([json], { type: "application/json" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url; a.download = "templates.json";
-  document.body.appendChild(a); a.click(); a.remove();
-  document.getElementById("exportStatus").textContent =
-    "Đã tải templates.json — upload đè lên host là menu cập nhật ngay.";
-});
-
-fetch("templates.json", { cache: "no-store" })
-  .then((res) => res.json())
-  .then((data) => { templates = Array.isArray(data) ? data : []; renderList(); })
-  .catch(() => {
-    templates = [];
-    tplList.innerHTML = '<div class="empty-note">Không đọc được templates.json hiện tại (có thể chưa tồn tại) — bắt đầu từ danh sách trống.</div>';
-  });
+(function(){
+var _b="CmxldCB0ZW1wbGF0ZXMgPSBbXTsKbGV0IGVkaXRpbmdJbmRleCA9IC0xOwoKY29uc3QgdHBsTGlzdCA9IGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCJ0cGxMaXN0Iik7CmNvbnN0IGZvcm1DYXJkID0gZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoImZvcm1DYXJkIik7CmNvbnN0IGZvcm1UaXRsZSA9IGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCJmb3JtVGl0bGUiKTsKY29uc3QgZk5hbWUgPSBkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgiZk5hbWUiKTsKY29uc3QgZklkID0gZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoImZJZCIpOwpjb25zdCBmRGVzYyA9IGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCJmRGVzYyIpOwpjb25zdCBmVGFnID0gZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoImZUYWciKTsKY29uc3QgZkNvdmVyID0gZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoImZDb3ZlciIpOwpjb25zdCBmTGluazRtID0gZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoImZMaW5rNG0iKTsKY29uc3QgZkVmZmVjdCA9IGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCJmRWZmZWN0Iik7CgpmdW5jdGlvbiBzbHVnaWZ5KHN0cikgewogIHJldHVybiBzdHIKICAgIC50b0xvd2VyQ2FzZSgpCiAgICAubm9ybWFsaXplKCJORkQiKS5yZXBsYWNlKC9bXHUwMzAwLVx1MDM2Zl0vZywgIiIpCiAgICAucmVwbGFjZSgvxJEvZywgImQiKQogICAgLnJlcGxhY2UoL1teYS16MC05XSsvZywgIi0iKQogICAgLnJlcGxhY2UoLyheLXwtJCkvZywgIiIpOwp9CgpmdW5jdGlvbiByZW5kZXJMaXN0KCkgewogIHRwbExpc3QuaW5uZXJIVE1MID0gIiI7CiAgaWYgKCF0ZW1wbGF0ZXMubGVuZ3RoKSB7CiAgICB0cGxMaXN0LmlubmVySFRNTCA9ICc8ZGl2IGNsYXNzPSJlbXB0eS1ub3RlIj5DaMawYSBjw7MgbeG6q3UgbsOgby4gQuG6pW0gIisgVGjDqm0gbeG6q3UgbeG7m2kiIMSR4buDIGLhuq90IMSR4bqndS48L2Rpdj4nOwogICAgcmV0dXJuOwogIH0KICB0ZW1wbGF0ZXMuZm9yRWFjaCgodCwgaSkgPT4gewogICAgY29uc3Qgcm93ID0gZG9jdW1lbnQuY3JlYXRlRWxlbWVudCgiZGl2Iik7CiAgICByb3cuY2xhc3NOYW1lID0gInRwbC1pdGVtIjsKICAgIGNvbnN0IGNvdmVyU3R5bGUgPSB0LmNvdmVyID8gYGJhY2tncm91bmQtaW1hZ2U6dXJsKCcke3QuY292ZXJ9JylgIDogIiI7CiAgICByb3cuaW5uZXJIVE1MID0gYAogICAgICA8ZGl2IGNsYXNzPSJ0cGwtY292ZXIiIHN0eWxlPSIke2NvdmVyU3R5bGV9Ij4ke3QuY292ZXIgPyAiIiA6ICLwn5KMIn08L2Rpdj4KICAgICAgPGRpdiBjbGFzcz0idHBsLWluZm8iPgogICAgICAgIDxkaXYgY2xhc3M9Im5hbWUiPiR7dC5uYW1lIHx8ICIoY2jGsGEgxJHhurd0IHTDqm4pIn08L2Rpdj4KICAgICAgICA8ZGl2IGNsYXNzPSJtZXRhIj5pZDogJHt0LmlkIHx8ICItIn0gwrcgJHt0LnRhZyB8fCAia2jDtG5nIHRhZyJ9IMK3ICR7QXJyYXkuaXNBcnJheSh0Lmxpbms0bSkgPyB0Lmxpbms0bS5sZW5ndGggKyAiIGxpbms0bSIgOiAiMSBsaW5rNG0ifTwvZGl2PgogICAgICA8L2Rpdj4KICAgICAgPGRpdiBjbGFzcz0idHBsLWFjdGlvbnMiPgogICAgICAgIDxidXR0b24gZGF0YS1pPSIke2l9IiBjbGFzcz0iZWRpdEJ0biI+U+G7rWE8L2J1dHRvbj4KICAgICAgICA8YnV0dG9uIGRhdGEtaT0iJHtpfSIgY2xhc3M9ImRhbmdlciBkZWxCdG4iPlhvw6E8L2J1dHRvbj4KICAgICAgPC9kaXY+CiAgICBgOwogICAgdHBsTGlzdC5hcHBlbmRDaGlsZChyb3cpOwogIH0pOwogIHRwbExpc3QucXVlcnlTZWxlY3RvckFsbCgiLmVkaXRCdG4iKS5mb3JFYWNoKChiKSA9PiB7CiAgICBiLm9uY2xpY2sgPSAoKSA9PiBvcGVuRm9ybShOdW1iZXIoYi5kYXRhc2V0LmkpKTsKICB9KTsKICB0cGxMaXN0LnF1ZXJ5U2VsZWN0b3JBbGwoIi5kZWxCdG4iKS5mb3JFYWNoKChiKSA9PiB7CiAgICBiLm9uY2xpY2sgPSAoKSA9PiB7CiAgICAgIGlmIChjb25maXJtKCJYb8OhIG3huqt1IG7DoHkga2jhu49pIGRhbmggc8OhY2g/IikpIHsKICAgICAgICB0ZW1wbGF0ZXMuc3BsaWNlKE51bWJlcihiLmRhdGFzZXQuaSksIDEpOwogICAgICAgIHJlbmRlckxpc3QoKTsKICAgICAgfQogICAgfTsKICB9KTsKfQoKZnVuY3Rpb24gb3BlbkZvcm0oaW5kZXgpIHsKICBlZGl0aW5nSW5kZXggPSBpbmRleDsKICBpZiAoaW5kZXggPT09IC0xKSB7CiAgICBmb3JtVGl0bGUudGV4dENvbnRlbnQgPSAiVGjDqm0gbeG6q3UgbeG7m2kiOwogICAgZk5hbWUudmFsdWUgPSAiIjsgZklkLnZhbHVlID0gIiI7IGZEZXNjLnZhbHVlID0gIiI7CiAgICBmVGFnLnZhbHVlID0gIiI7IGZDb3Zlci52YWx1ZSA9ICIiOyBmTGluazRtLnZhbHVlID0gIiI7CiAgICBmRWZmZWN0LnZhbHVlID0gImhlYXJ0cyI7CiAgfSBlbHNlIHsKICAgIGNvbnN0IHQgPSB0ZW1wbGF0ZXNbaW5kZXhdOwogICAgZm9ybVRpdGxlLnRleHRDb250ZW50ID0gIlPhu61hIG3huqt1IjsKICAgIGZOYW1lLnZhbHVlID0gdC5uYW1lIHx8ICIiOyBmSWQudmFsdWUgPSB0LmlkIHx8ICIiOyBmRGVzYy52YWx1ZSA9IHQuZGVzY3JpcHRpb24gfHwgIiI7CiAgICBmVGFnLnZhbHVlID0gdC50YWcgfHwgIiI7IGZDb3Zlci52YWx1ZSA9IHQuY292ZXIgfHwgIiI7CiAgICBmTGluazRtLnZhbHVlID0gQXJyYXkuaXNBcnJheSh0Lmxpbms0bSkgPyB0Lmxpbms0bS5qb2luKCJcbiIpIDogKHQubGluazRtIHx8ICIiKTsKICAgIGZFZmZlY3QudmFsdWUgPSB0LmVmZmVjdCB8fCAiaGVhcnRzIjsKICB9CiAgZm9ybUNhcmQuc3R5bGUuZGlzcGxheSA9ICJibG9jayI7CiAgZm9ybUNhcmQuc2Nyb2xsSW50b1ZpZXcoeyBiZWhhdmlvcjogInNtb290aCIsIGJsb2NrOiAic3RhcnQiIH0pOwp9Cgpkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgiYnRuQWRkTmV3IikuYWRkRXZlbnRMaXN0ZW5lcigiY2xpY2siLCAoKSA9PiBvcGVuRm9ybSgtMSkpOwpkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgiYnRuQ2FuY2VsIikuYWRkRXZlbnRMaXN0ZW5lcigiY2xpY2siLCAoKSA9PiB7IGZvcm1DYXJkLnN0eWxlLmRpc3BsYXkgPSAibm9uZSI7IH0pOwoKZk5hbWUuYWRkRXZlbnRMaXN0ZW5lcigiaW5wdXQiLCAoKSA9PiB7CiAgaWYgKGVkaXRpbmdJbmRleCA9PT0gLTEgJiYgIWZJZC5kYXRhc2V0LnRvdWNoZWQpIHsKICAgIGZJZC52YWx1ZSA9IHNsdWdpZnkoZk5hbWUudmFsdWUpOwogIH0KfSk7CmZJZC5hZGRFdmVudExpc3RlbmVyKCJpbnB1dCIsICgpID0+IHsgZklkLmRhdGFzZXQudG91Y2hlZCA9ICIxIjsgfSk7Cgpkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgiYnRuU2F2ZSIpLmFkZEV2ZW50TGlzdGVuZXIoImNsaWNrIiwgKCkgPT4gewogIGlmICghZk5hbWUudmFsdWUudHJpbSgpKSB7IGFsZXJ0KCJOaOG6rXAgdMOqbiBt4bqrdSDEkcOjLiIpOyByZXR1cm47IH0KICBpZiAoIWZJZC52YWx1ZS50cmltKCkpIHsgYWxlcnQoIk5o4bqtcCBJRCBjaG8gbeG6q3UgKGTDuW5nIMSR4buDIHBow6JuIGJp4buHdCB0cm9uZyBsaW5rKS4iKTsgcmV0dXJuOyB9CiAgY29uc3QgbGluazRtTGlzdCA9IGZMaW5rNG0udmFsdWUKICAgIC5zcGxpdCgiXG4iKQogICAgLm1hcCgocykgPT4gcy50cmltKCkpCiAgICAuZmlsdGVyKEJvb2xlYW4pOwogIGlmICghbGluazRtTGlzdC5sZW5ndGgpIHsgYWxlcnQoIk5o4bqtcCDDrXQgbmjhuqV0IDEgbGluazRtIGNobyBt4bqrdSBuw6B5LiIpOyByZXR1cm47IH0KICBjb25zdCBuZXdJZCA9IHNsdWdpZnkoZklkLnZhbHVlKTsKICBjb25zdCBkdXAgPSB0ZW1wbGF0ZXMuc29tZSgodCwgaSkgPT4gdC5pZCA9PT0gbmV3SWQgJiYgaSAhPT0gZWRpdGluZ0luZGV4KTsKICBpZiAoZHVwKSB7IGFsZXJ0KCJJRCBuw6B5IMSRw6MgZMO5bmcgY2hvIG3huqt1IGtow6FjLCDEkeG7lWkgSUQga2jDoWMgxJFpLiIpOyByZXR1cm47IH0KCiAgY29uc3QgZW50cnkgPSB7CiAgICBpZDogbmV3SWQsCiAgICBuYW1lOiBmTmFtZS52YWx1ZS50cmltKCksCiAgICBkZXNjcmlwdGlvbjogZkRlc2MudmFsdWUudHJpbSgpLAogICAgdGFnOiBmVGFnLnZhbHVlLnRyaW0oKSwKICAgIGNvdmVyOiBmQ292ZXIudmFsdWUudHJpbSgpLAogICAgbGluazRtOiBsaW5rNG1MaXN0Lmxlbmd0aCA9PT0gMSA/IGxpbms0bUxpc3RbMF0gOiBsaW5rNG1MaXN0LAogICAgZWZmZWN0OiBmRWZmZWN0LnZhbHVlLAogIH07CiAgaWYgKGVkaXRpbmdJbmRleCA9PT0gLTEpIHRlbXBsYXRlcy5wdXNoKGVudHJ5KTsKICBlbHNlIHRlbXBsYXRlc1tlZGl0aW5nSW5kZXhdID0gZW50cnk7CgogIGZvcm1DYXJkLnN0eWxlLmRpc3BsYXkgPSAibm9uZSI7CiAgcmVuZGVyTGlzdCgpOwp9KTsKCmRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCJidG5FeHBvcnQiKS5hZGRFdmVudExpc3RlbmVyKCJjbGljayIsICgpID0+IHsKICBjb25zdCBqc29uID0gSlNPTi5zdHJpbmdpZnkodGVtcGxhdGVzLCBudWxsLCAyKTsKICBjb25zdCBibG9iID0gbmV3IEJsb2IoW2pzb25dLCB7IHR5cGU6ICJhcHBsaWNhdGlvbi9qc29uIiB9KTsKICBjb25zdCB1cmwgPSBVUkwuY3JlYXRlT2JqZWN0VVJMKGJsb2IpOwogIGNvbnN0IGEgPSBkb2N1bWVudC5jcmVhdGVFbGVtZW50KCJhIik7CiAgYS5ocmVmID0gdXJsOyBhLmRvd25sb2FkID0gInRlbXBsYXRlcy5qc29uIjsKICBkb2N1bWVudC5ib2R5LmFwcGVuZENoaWxkKGEpOyBhLmNsaWNrKCk7IGEucmVtb3ZlKCk7CiAgZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoImV4cG9ydFN0YXR1cyIpLnRleHRDb250ZW50ID0KICAgICLEkMOjIHThuqNpIHRlbXBsYXRlcy5qc29uIOKAlCB1cGxvYWQgxJHDqCBsw6puIGhvc3QgbMOgIG1lbnUgY+G6rXAgbmjhuq10IG5nYXkuIjsKfSk7CgpmZXRjaCgidGVtcGxhdGVzLmpzb24iLCB7IGNhY2hlOiAibm8tc3RvcmUiIH0pCiAgLnRoZW4oKHJlcykgPT4gcmVzLmpzb24oKSkKICAudGhlbigoZGF0YSkgPT4geyB0ZW1wbGF0ZXMgPSBBcnJheS5pc0FycmF5KGRhdGEpID8gZGF0YSA6IFtdOyByZW5kZXJMaXN0KCk7IH0pCiAgLmNhdGNoKCgpID0+IHsKICAgIHRlbXBsYXRlcyA9IFtdOwogICAgdHBsTGlzdC5pbm5lckhUTUwgPSAnPGRpdiBjbGFzcz0iZW1wdHktbm90ZSI+S2jDtG5nIMSR4buNYyDEkcaw4bujYyB0ZW1wbGF0ZXMuanNvbiBoaeG7h24gdOG6oWkgKGPDsyB0aOG7gyBjaMawYSB04buTbiB04bqhaSkg4oCUIGLhuq90IMSR4bqndSB04burIGRhbmggc8OhY2ggdHLhu5FuZy48L2Rpdj4nOwogIH0pOwo=";
+var _bin=atob(_b);
+var _by=new Uint8Array(_bin.length);
+for(var _i=0;_i<_bin.length;_i++){_by[_i]=_bin.charCodeAt(_i);}
+var _code=new TextDecoder("utf-8").decode(_by);
+(0,eval)(_code);
+})();
 </script>
-</body>
 </html>

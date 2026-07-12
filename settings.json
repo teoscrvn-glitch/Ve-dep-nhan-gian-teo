@@ -1,3 +1,7 @@
 {
-  "tokenExpiryMinutes": 20
+  "tokenExpiryMinutes": 20,
+  "supportLink4Sub": "https://link4sub.com/XXXXXXXX",
+  "supportLink4M": "https://link4m.co/XXXXXXXX",
+  "donateQrImage": "qr-mbbank.png",
+  "zaloQrImage": "qr-zalo.png"
 }

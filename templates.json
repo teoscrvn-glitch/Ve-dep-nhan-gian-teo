@@ -1,11 +1,15 @@
 [
   {
     "id": "hearts",
-    "name": "tình yêu kiếp này",
+    "name": "Tình yêu kiếp này",
     "description": "Ảnh và lời nhắn rơi nhẹ trên nền bầu trời, chạm màn hình để pháo hoa trái tim.",
     "cover": "",
     "tag": "🩷 Lãng mạn",
-    "link4m": "https://link4m.org/C5mnBIB"
+    "link4m": [
+      "https://link4sub.com/xEGjr9EfwM",
+      "https://link4sub.com/jGGIXTjkt8"
+    ],
+    "effect": "hearts"
   },
   {
     "id": "galaxy",
@@ -13,6 +17,22 @@
     "description": "Ảnh trôi quanh hành tinh phát sáng giữa dải ngân hà 3D, chạm vào ảnh để đọc lời nhắn.",
     "cover": "",
     "tag": "🌌 3D",
-    "link4m": "https://link4m.net/Zr3z7nFX"
+    "link4m": [
+      "https://link4sub.com/kOownnqsvC",
+      "https://link4sub.com/DHv9iXMKuN"
+    ],
+    "effect": "galaxy"
+  }
+{
+    "id": "letters",
+    "name": "Thư Tình Từng Trang",
+    "description": "Chạm màn hình để lật từng câu, chữ hiện kiểu giải mã trên nền ảnh của bạn, cuối cùng ảnh sẽ rơi đầy màn hình.",
+    "cover": "",
+    "tag": "💌 Tâm sự",
+    "link4m": [
+      "https://link4sub.com/bqTpHhlYGZ",
+      "https://link4sub.com/qF6P8hhwhL"
+    ],
+    "effect": "letters"
   }
 ]
