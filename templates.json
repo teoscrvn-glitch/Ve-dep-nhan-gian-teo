@@ -34,5 +34,29 @@
       "https://link4sub.com/qF6P8hhwhL"
     ],
     "effect": "letters"
+  },
+  {
+    "id": "memories",
+    "name": "Chòm Sao Kỷ Niệm",
+    "description": "Ảnh và lời nhắn nổi lơ lửng trên nền sao, chạm màn hình để thả tim.",
+    "cover": "",
+    "tag": "✨ Kỷ niệm",
+    "link4m": [
+      "https://link4sub.com/DAN_LINK_1_MAU_KY_NIEM",
+      "https://link4sub.com/DAN_LINK_2_MAU_KY_NIEM"
+    ],
+    "effect": "memories"
+  },
+  {
+    "id": "secretbox",
+    "name": "Hộp Quà Bí Mật",
+    "description": "Menu Nhạc / Thư / Ảnh / Quà — mục Quà khoá bằng mật khẩu riêng do bạn đặt.",
+    "cover": "",
+    "tag": "🔒 Bí mật",
+    "link4m": [
+      "https://link4sub.com/DAN_LINK_1_MAU_HOP_QUA",
+      "https://link4sub.com/DAN_LINK_2_MAU_HOP_QUA"
+    ],
+    "effect": "secretbox"
   }
 ]
